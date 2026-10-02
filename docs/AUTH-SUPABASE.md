@@ -65,18 +65,20 @@ create trigger on_auth_user_created
    - **anon public** key
 3. **Ne mettez jamais** la clé `service_role` dans RhosTool.
 
-## 5. Configurer RhosTool
+## 5. Configurer RhosTool (rapide)
 
-Au premier lancement, l’app crée `%AppData%\RhosTool\config.json`.
+Projet déjà créé : `hoczacluoagcncwohglw`  
+URL : `https://hoczacluoagcncwohglw.supabase.co`
 
-Éditez ce fichier (ou le modèle `appsettings.json` livré avec l’exe) :
+Dans PowerShell, à la racine du dépôt :
 
-```json
-{
-  "SupabaseUrl": "https://VOTRE_REF.supabase.co",
-  "SupabaseAnonKey": "eyJhbGciOi..."
-}
+```powershell
+.\installer\link-supabase.ps1
 ```
+
+Ou manuellement : éditez `%AppData%\RhosTool\config.json` avec l’URL + la clé **anon** (bouton **Connect** → `.env.local` sur le dashboard Supabase).
+
+**Ne mettez jamais** la clé `service_role` dans RhosTool.
 
 Relancez RhosTool → fenêtre de connexion → **Créer un compte** ou **Connexion**.
 
