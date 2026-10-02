@@ -1,0 +1,491 @@
+<Window x:Class="RhosTool.App.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework"
+        Title="RhosTool"
+        Width="1280"
+        Height="820"
+        MinWidth="900"
+        MinHeight="560"
+        WindowStyle="None"
+        ResizeMode="CanResize"
+        Background="#FF2A2A2A"
+        WindowStartupLocation="CenterScreen"
+        UseLayoutRounding="True"
+        SnapsToDevicePixels="True"
+        TextOptions.TextFormattingMode="Display"
+        TextOptions.TextRenderingMode="ClearType">
+  <shell:WindowChrome.WindowChrome>
+    <shell:WindowChrome CaptionHeight="30"
+                        ResizeBorderThickness="6"
+                        GlassFrameThickness="0"
+                        CornerRadius="0"
+                        UseAeroCaptionButtons="False" />
+  </shell:WindowChrome.WindowChrome>
+
+  <Border BorderBrush="#FF555555" BorderThickness="1">
+    <Grid>
+      <Grid.RowDefinitions>
+        <RowDefinition Height="30" />
+        <RowDefinition Height="126" />
+        <RowDefinition Height="*" />
+        <RowDefinition Height="26" />
+      </Grid.RowDefinitions>
+
+      <!-- Title bar (UnlockTool: gris + icônes blanches) -->
+      <Border Grid.Row="0"
+              Background="#FF333333"
+              BorderBrush="#FF484848"
+              BorderThickness="0,0,0,1"
+              MouseLeftButtonDown="TitleBar_MouseLeftButtonDown">
+        <Grid>
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="Auto" />
+          </Grid.ColumnDefinitions>
+
+          <TextBlock Text="RhosTool"
+                     FontSize="12"
+                     FontWeight="SemiBold"
+                     Foreground="#FFE8E8E8"
+                     VerticalAlignment="Center"
+                     Margin="10,0,0,0"
+                     IsHitTestVisible="False" />
+
+          <StackPanel Grid.Column="1"
+                      Orientation="Horizontal"
+                      shell:WindowChrome.IsHitTestVisibleInChrome="True">
+            <!-- Minimize — -->
+            <Button Style="{StaticResource CaptionButton}"
+                    ToolTip="Réduire"
+                    Click="Minimize_Click">
+              <Path Stroke="#FFFFFFFF"
+                    StrokeThickness="1"
+                    StrokeStartLineCap="Flat"
+                    StrokeEndLineCap="Flat"
+                    Width="10" Height="10"
+                    Stretch="None"
+                    Data="M 0,5 H 10"
+                    SnapsToDevicePixels="True" />
+            </Button>
+            <!-- Maximize / Restore ❐ -->
+            <Button Style="{StaticResource CaptionButton}"
+                    ToolTip="Agrandir"
+                    Click="MaxRestore_Click">
+              <Path x:Name="MaxRestoreGlyph"
+                    Stroke="#FFFFFFFF"
+                    StrokeThickness="1"
+                    Fill="Transparent"
+                    Width="10" Height="10"
+                    Stretch="None"
+                    SnapsToDevicePixels="True"
+                    Data="M 0,0 H 10 V 10 H 0 Z" />
+            </Button>
+            <!-- Close ✕ -->
+            <Button Style="{StaticResource CaptionCloseButton}"
+                    ToolTip="Fermer"
+                    Click="Close_Click">
+              <Path x:Name="CloseGlyph"
+                    Stroke="#FFFFFFFF"
+                    StrokeThickness="1"
+                    StrokeStartLineCap="Flat"
+                    StrokeEndLineCap="Flat"
+                    Width="10" Height="10"
+                    Stretch="None"
+                    SnapsToDevicePixels="True"
+                    Data="M 0,0 L 10,10 M 10,0 L 0,10" />
+            </Button>
+          </StackPanel>
+        </Grid>
+      </Border>
+
+      <!-- Brands (3×10 = 30 marques, toutes visibles sans scroll) -->
+      <Border Grid.Row="1"
+              Background="#FF2A2A2A"
+              BorderBrush="#FF484848"
+              BorderThickness="0,0,0,1"
+              Padding="4,2"
+              ClipToBounds="True">
+        <ListBox ItemsSource="{Binding Brands}"
+                 SelectedItem="{Binding SelectedBrand}"
+                 Style="{StaticResource BrandListBox}"
+                 VerticalAlignment="Stretch"
+                 HorizontalAlignment="Stretch"
+                 PreviewMouseWheel="Brands_PreviewMouseWheel">
+          <ListBox.ItemsPanel>
+            <ItemsPanelTemplate>
+              <UniformGrid Rows="3" Columns="10"
+                           VerticalAlignment="Stretch"
+                           HorizontalAlignment="Stretch" />
+            </ItemsPanelTemplate>
+          </ListBox.ItemsPanel>
+          <ListBox.ItemContainerStyle>
+            <Style TargetType="ListBoxItem" BasedOn="{StaticResource BrandTile}" />
+          </ListBox.ItemContainerStyle>
+          <ListBox.ItemTemplate>
+            <DataTemplate>
+              <TextBlock Text="{Binding ShortName}"
+                         FontWeight="Bold"
+                         FontSize="10"
+                         Foreground="White"
+                         TextTrimming="CharacterEllipsis">
+                <TextBlock.Effect>
+                  <DropShadowEffect BlurRadius="3" ShadowDepth="1" Opacity="0.85" Color="#FF000000" />
+                </TextBlock.Effect>
+              </TextBlock>
+            </DataTemplate>
+          </ListBox.ItemTemplate>
+        </ListBox>
+      </Border>
+
+      <!-- Workspace with mesh -->
+      <Grid Grid.Row="2">
+        <Rectangle Fill="{StaticResource BrushGridMesh}" IsHitTestVisible="False" />
+        <Grid>
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="300" MinWidth="180" />
+            <ColumnDefinition Width="5" />
+            <ColumnDefinition Width="*" MinWidth="260" />
+            <ColumnDefinition Width="5" />
+            <ColumnDefinition Width="420" MinWidth="280" />
+          </Grid.ColumnDefinitions>
+
+          <!-- LEFT -->
+          <Border Grid.Column="0"
+                  Background="{StaticResource BrushBgPanel}"
+                  BorderBrush="#FF484848"
+                  BorderThickness="0,0,1,0">
+            <DockPanel>
+              <ListBox DockPanel.Dock="Top"
+                       ItemsSource="{Binding ModeTabs}"
+                       SelectedItem="{Binding SelectedModeTab}"
+                       Background="Transparent"
+                       BorderThickness="0"
+                       Margin="8,10,8,6"
+                       ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                <ListBox.ItemsPanel>
+                  <ItemsPanelTemplate>
+                    <StackPanel Orientation="Horizontal" />
+                  </ItemsPanelTemplate>
+                </ListBox.ItemsPanel>
+                <ListBox.ItemContainerStyle>
+                  <Style TargetType="ListBoxItem" BasedOn="{StaticResource ModeTab}">
+                    <Setter Property="Foreground" Value="White" />
+                    <Style.Triggers>
+                      <Trigger Property="IsSelected" Value="True">
+                        <Setter Property="Foreground" Value="{StaticResource BrushTextOnAccent}" />
+                      </Trigger>
+                    </Style.Triggers>
+                  </Style>
+                </ListBox.ItemContainerStyle>
+                <ListBox.ItemTemplate>
+                  <DataTemplate>
+                    <TextBlock Text="{Binding}"
+                               FontWeight="Bold"
+                               FontSize="11"
+                               Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=ListBoxItem}}" />
+                  </DataTemplate>
+                </ListBox.ItemTemplate>
+              </ListBox>
+
+              <DockPanel DockPanel.Dock="Top" Margin="8,0,8,8">
+                <Border DockPanel.Dock="Right"
+                        Background="#FF1A1A1A"
+                        BorderBrush="{StaticResource BrushAccent}"
+                        BorderThickness="1"
+                        CornerRadius="2"
+                        Padding="8,4"
+                        Margin="8,0,0,0"
+                        VerticalAlignment="Center">
+                  <TextBlock Text="{Binding ModelCountText}"
+                             Foreground="{StaticResource BrushAccent}"
+                             FontWeight="Bold"
+                             FontSize="11" />
+                </Border>
+                <Grid>
+                  <TextBox Style="{StaticResource SearchBox}"
+                           Text="{Binding ModelFilter, UpdateSourceTrigger=PropertyChanged}" />
+                  <TextBlock Text="Search model…"
+                             IsHitTestVisible="False"
+                             Foreground="#FF8A8A8A"
+                             Margin="10,8,0,0">
+                    <TextBlock.Style>
+                      <Style TargetType="TextBlock">
+                        <Setter Property="Visibility" Value="Collapsed" />
+                        <Style.Triggers>
+                          <DataTrigger Binding="{Binding ModelFilter}" Value="">
+                            <Setter Property="Visibility" Value="Visible" />
+                          </DataTrigger>
+                        </Style.Triggers>
+                      </Style>
+                    </TextBlock.Style>
+                  </TextBlock>
+                </Grid>
+              </DockPanel>
+
+              <ListBox ItemsSource="{Binding FilteredModels}"
+                       SelectedItem="{Binding SelectedModel}"
+                       Background="{StaticResource BrushBgConsole}"
+                       BorderBrush="#FF4A4A4A"
+                       BorderThickness="1"
+                       Margin="6,0,6,6"
+                       ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                       VirtualizingPanel.IsVirtualizing="True"
+                       VirtualizingPanel.VirtualizationMode="Recycling">
+                <ListBox.ItemContainerStyle>
+                  <Style TargetType="ListBoxItem" BasedOn="{StaticResource ModelRow}" />
+                </ListBox.ItemContainerStyle>
+                <ListBox.ItemTemplate>
+                  <DataTemplate>
+                    <StackPanel>
+                      <TextBlock Text="{Binding DisplayName}"
+                                 Foreground="{StaticResource BrushAccentText}"
+                                 FontWeight="SemiBold"
+                                 TextWrapping="Wrap" />
+                      <TextBlock Margin="0,2,0,0" FontSize="11">
+                        <Run Text="{Binding ModelCode, Mode=OneWay}" Foreground="#FFF5F5F5" />
+                        <Run Text=" - " Foreground="#FF9E9E9E" />
+                        <Run Text="{Binding Chipset, Mode=OneWay}" Foreground="#FFBDBDBD" />
+                      </TextBlock>
+                      <ItemsControl ItemsSource="{Binding Tags}" Margin="0,5,0,0">
+                        <ItemsControl.ItemsPanel>
+                          <ItemsPanelTemplate>
+                            <WrapPanel />
+                          </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                          <DataTemplate>
+                            <Border Background="{Binding Converter={StaticResource TagToBrush}}"
+                                    CornerRadius="2"
+                                    Padding="6,2"
+                                    Margin="0,0,4,2">
+                              <TextBlock Text="{Binding}" FontSize="9" Foreground="White" FontWeight="Bold" />
+                            </Border>
+                          </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                      </ItemsControl>
+                    </StackPanel>
+                  </DataTemplate>
+                </ListBox.ItemTemplate>
+              </ListBox>
+            </DockPanel>
+          </Border>
+
+          <GridSplitter Grid.Column="1" Style="{StaticResource ColumnSplitter}" />
+
+          <!-- CENTER -->
+          <Border Grid.Column="2" Background="{StaticResource BrushBgApp}" Padding="12,10">
+            <DockPanel>
+              <ListBox DockPanel.Dock="Top"
+                       ItemsSource="{Binding FunctionTabs}"
+                       SelectedItem="{Binding SelectedFunctionTab}"
+                       Background="Transparent"
+                       BorderThickness="0"
+                       Margin="0,0,0,14"
+                       ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                       ScrollViewer.VerticalScrollBarVisibility="Disabled">
+                <ListBox.ItemsPanel>
+                  <ItemsPanelTemplate>
+                    <StackPanel Orientation="Horizontal" />
+                  </ItemsPanelTemplate>
+                </ListBox.ItemsPanel>
+                <ListBox.ItemContainerStyle>
+                  <Style TargetType="ListBoxItem" BasedOn="{StaticResource FuncTab}" />
+                </ListBox.ItemContainerStyle>
+                <ListBox.ItemTemplate>
+                  <DataTemplate>
+                    <TextBlock Text="{Binding Title}"
+                               Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=ListBoxItem}}" />
+                  </DataTemplate>
+                </ListBox.ItemTemplate>
+              </ListBox>
+
+              <Border DockPanel.Dock="Top"
+                      Background="{StaticResource BrushBgPanel}"
+                      BorderBrush="#FF4A4A4A"
+                      BorderThickness="1"
+                      CornerRadius="2"
+                      Padding="10,8"
+                      Margin="0,0,0,12">
+                <Grid>
+                  <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="160" />
+                  </Grid.ColumnDefinitions>
+                  <TextBlock TextWrapping="Wrap" VerticalAlignment="Center">
+                    <Run Text="Model: " Foreground="#FFBDBDBD" />
+                    <Run Text="{Binding SelectedModel.DisplayName, Mode=OneWay}" Foreground="White" FontWeight="SemiBold" />
+                  </TextBlock>
+                  <DockPanel Grid.Column="1">
+                    <TextBlock Text="Chip"
+                               Foreground="#FFBDBDBD"
+                               VerticalAlignment="Center"
+                               Margin="0,0,8,0" />
+                    <ComboBox ItemsSource="{Binding ChipOptions}"
+                              SelectedItem="{Binding SelectedChip}"
+                              Style="{StaticResource DarkCombo}" />
+                  </DockPanel>
+                </Grid>
+              </Border>
+
+              <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                <ItemsControl ItemsSource="{Binding Operations}">
+                  <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                      <WrapPanel Orientation="Horizontal" />
+                    </ItemsPanelTemplate>
+                  </ItemsControl.ItemsPanel>
+                  <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                      <Button Content="{Binding Title}"
+                              ToolTip="{Binding Description}"
+                              Style="{StaticResource ActionButton}"
+                              Command="{Binding DataContext.RunOperationCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                              CommandParameter="{Binding}" />
+                    </DataTemplate>
+                  </ItemsControl.ItemTemplate>
+                </ItemsControl>
+              </ScrollViewer>
+            </DockPanel>
+          </Border>
+
+          <GridSplitter Grid.Column="3" Style="{StaticResource ColumnSplitter}" />
+
+          <!-- RIGHT -->
+          <Border Grid.Column="4"
+                  Background="{StaticResource BrushBgPanel}"
+                  BorderBrush="#FF484848"
+                  BorderThickness="1,0,0,0"
+                  Padding="10">
+            <DockPanel>
+              <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,10">
+                <Button Content="ADB" Style="{StaticResource UtilButton}" Command="{Binding CheckAdbCommand}" />
+                <Button Content="FAST&#x0a;BOOT" Style="{StaticResource UtilButton}" Command="{Binding RefreshNowCommand}" />
+                <Button Content="T.POINT" Style="{StaticResource UtilButton}" Command="{Binding OpenConfigCommand}" />
+                <Button Content="DEVMGR" Style="{StaticResource UtilButton}" Command="{Binding OpenDeviceManagerCommand}" />
+                <Button Content="CONFIG" Style="{StaticResource UtilButton}" Command="{Binding OpenConfigCommand}" />
+              </StackPanel>
+
+              <Grid DockPanel.Dock="Top" Margin="0,0,0,10">
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="*" />
+                  <ColumnDefinition Width="100" />
+                  <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <Border Background="{StaticResource BrushBgInput}"
+                        BorderBrush="{StaticResource BrushBorderStrong}"
+                        BorderThickness="1"
+                        Padding="8,7"
+                        Margin="0,0,6,0">
+                  <TextBlock>
+                    <Run Text="USB  " Foreground="{StaticResource BrushAccent}" FontWeight="Bold" />
+                    <Run Text="{Binding UsbStatus, Mode=OneWay}" Foreground="White" />
+                  </TextBlock>
+                </Border>
+                <ComboBox Grid.Column="1"
+                          ItemsSource="{Binding ComPorts}"
+                          SelectedItem="{Binding SelectedComPort}"
+                          Style="{StaticResource DarkCombo}"
+                          Margin="0,0,6,0" />
+                <CheckBox Grid.Column="2"
+                          Content="Fast Connect"
+                          IsChecked="{Binding FastConnect}"
+                          Foreground="White"
+                          VerticalAlignment="Center" />
+              </Grid>
+
+              <Border DockPanel.Dock="Bottom" Margin="0,10,0,0" Padding="0,4,0,0">
+                <Grid>
+                  <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="76" />
+                  </Grid.ColumnDefinitions>
+                  <StackPanel Margin="0,0,10,0" VerticalAlignment="Center">
+                    <Grid Margin="0,0,0,6">
+                      <ProgressBar Style="{StaticResource AccentProgress}" Value="{Binding ProgressValue}" />
+                      <TextBlock Text="{Binding ProgressText}"
+                                 HorizontalAlignment="Center"
+                                 VerticalAlignment="Center"
+                                 FontWeight="Bold"
+                                 FontSize="11"
+                                 Foreground="#FF111111" />
+                    </Grid>
+                    <ProgressBar Style="{StaticResource AccentProgress}" Value="{Binding ProgressValue}" />
+                  </StackPanel>
+                  <Button Grid.Column="1"
+                          Content="STOP"
+                          Style="{StaticResource StopButton}"
+                          Command="{Binding StopCommand}"
+                          HorizontalAlignment="Center" />
+                </Grid>
+              </Border>
+
+              <Border Background="{StaticResource BrushBgConsole}"
+                      BorderBrush="{StaticResource BrushAccent}"
+                      BorderThickness="1"
+                      CornerRadius="2">
+                <DockPanel>
+                  <DockPanel DockPanel.Dock="Top" Margin="10,8,10,4">
+                    <TextBlock Text="CONSOLE"
+                               FontSize="11"
+                               FontWeight="Bold"
+                               Foreground="{StaticResource BrushAccent}" />
+                    <TextBlock DockPanel.Dock="Right"
+                               Text="{Binding CatalogStats}"
+                               FontSize="10"
+                               Foreground="{StaticResource BrushLogOk}"
+                               HorizontalAlignment="Right" />
+                  </DockPanel>
+                  <ListBox ItemsSource="{Binding LogLines}"
+                           Background="Transparent"
+                           BorderThickness="0"
+                           Foreground="{StaticResource BrushLogOk}"
+                           FontFamily="Consolas"
+                           FontSize="12"
+                           Margin="6"
+                           ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                           ScrollViewer.VerticalScrollBarVisibility="Auto">
+                    <ListBox.ItemContainerStyle>
+                      <Style TargetType="ListBoxItem">
+                        <Setter Property="Padding" Value="2,2" />
+                        <Setter Property="Foreground" Value="{StaticResource BrushLogOk}" />
+                        <Setter Property="Template">
+                          <Setter.Value>
+                            <ControlTemplate TargetType="ListBoxItem">
+                              <ContentPresenter />
+                            </ControlTemplate>
+                          </Setter.Value>
+                        </Setter>
+                      </Style>
+                    </ListBox.ItemContainerStyle>
+                  </ListBox>
+                </DockPanel>
+              </Border>
+            </DockPanel>
+          </Border>
+        </Grid>
+      </Grid>
+
+      <!-- Status bar -->
+      <Border Grid.Row="3"
+              Background="#FF252525"
+              BorderBrush="#FF484848"
+              BorderThickness="0,1,0,0">
+        <Grid Margin="8,0">
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="Auto" />
+          </Grid.ColumnDefinitions>
+          <TextBlock Text="{Binding ServerStatus}" VerticalAlignment="Center" Foreground="#FFF0F0F0" FontSize="11" />
+          <TextBlock Grid.Column="1" Text="{Binding CreditsDisplay}" VerticalAlignment="Center" Foreground="{StaticResource BrushAccent}" FontWeight="SemiBold" FontSize="11" Margin="0,0,16,0" />
+          <TextBlock Grid.Column="2" Text="{Binding PcName}" VerticalAlignment="Center" Foreground="#FFF5F5F5" Margin="0,0,14,0" FontSize="11" />
+          <TextBlock Grid.Column="3" Text="{Binding UserDisplay}" VerticalAlignment="Center" Margin="0,0,14,0" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource BrushAccent}" />
+          <TextBlock Grid.Column="4" Text="{Binding ClockText}" VerticalAlignment="Center" Foreground="#FFF0F0F0" FontSize="11" />
+        </Grid>
+      </Border>
+    </Grid>
+  </Border>
+</Window>

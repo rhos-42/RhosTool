@@ -1,0 +1,41 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
+    <ApplicationTitle>RhosTool</ApplicationTitle>
+    <RootNamespace>RhosTool.App</RootNamespace>
+    <AssemblyName>RhosTool</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.3.2" />
+    <PackageReference Include="System.IO.Ports" Version="8.0.0" />
+    <PackageReference Include="System.Security.Cryptography.ProtectedData" Version="8.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\RhosTool.Core\RhosTool.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="appsettings.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <Target Name="CopyPlatformTools" AfterTargets="Build">
+    <PropertyGroup>
+      <_PtSource>$([System.IO.Path]::GetFullPath('$(MSBuildProjectDirectory)\..\..\tools\platform-tools'))</_PtSource>
+      <_PtDest>$(OutputPath)platform-tools</_PtDest>
+    </PropertyGroup>
+    <ItemGroup Condition="Exists('$(_PtSource)\adb.exe')">
+      <_PtFiles Include="$(_PtSource)\**\*.*" />
+    </ItemGroup>
+    <Copy SourceFiles="@(_PtFiles)" DestinationFiles="@(_PtFiles->'$(_PtDest)\%(RecursiveDir)%(Filename)%(Extension)')" SkipUnchangedFiles="true" Condition="'@(_PtFiles)' != ''" />
+  </Target>
+
+</Project>

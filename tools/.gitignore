@@ -1,0 +1,3 @@
+# Keep directory for platform-tools download
+*
+!.gitignore
