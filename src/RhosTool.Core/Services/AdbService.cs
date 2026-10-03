@@ -97,7 +97,10 @@ public sealed class AdbService
         return await RunAsync($"-s {serial} shell {command}", ct).ConfigureAwait(false);
     }
 
-    public async Task<string> ListPackagesAsync(string serial, bool thirdPartyOnly, CancellationToken ct = default)
+    public async Task<IReadOnlyList<string>> GetPackageListAsync(
+        string serial,
+        bool thirdPartyOnly,
+        CancellationToken ct = default)
     {
         var flag = thirdPartyOnly ? " -3" : "";
         var output = await ShellAsync(serial, $"pm list packages{flag}", ct).ConfigureAwait(false);
@@ -105,10 +108,17 @@ public sealed class AdbService
             .Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
             .Select(l => l.Replace("package:", "", StringComparison.OrdinalIgnoreCase).Trim())
             .Where(l => l.Length > 0)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
             .OrderBy(l => l, StringComparer.OrdinalIgnoreCase)
             .ToList();
 
         _log.Info($"{lines.Count} package(s) trouvé(s).");
+        return lines;
+    }
+
+    public async Task<string> ListPackagesAsync(string serial, bool thirdPartyOnly, CancellationToken ct = default)
+    {
+        var lines = await GetPackageListAsync(serial, thirdPartyOnly, ct).ConfigureAwait(false);
         return string.Join(Environment.NewLine, lines);
     }
 

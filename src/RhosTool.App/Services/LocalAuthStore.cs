@@ -28,6 +28,67 @@ public static class LocalAuthStore
 
     public static string ConfigPath => Path.Combine(AppDataDir, "config.json");
     public static string SessionPath => Path.Combine(AppDataDir, "session.bin");
+    public static string IdentitiesPath => Path.Combine(AppDataDir, "identities.json");
+
+    private const string LastUsernameKey = "__last_username__";
+
+    public static void RememberIdentity(string username, string email)
+    {
+        if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(email))
+        {
+            return;
+        }
+
+        var map = LoadIdentities();
+        map[username.Trim()] = email.Trim();
+        map[LastUsernameKey] = username.Trim();
+        var json = JsonSerializer.Serialize(map, JsonOptions);
+        File.WriteAllText(IdentitiesPath, json, Encoding.UTF8);
+    }
+
+    public static string? LastUsername()
+    {
+        var map = LoadIdentities();
+        if (map.TryGetValue(LastUsernameKey, out var last) && !string.IsNullOrWhiteSpace(last))
+        {
+            return last;
+        }
+
+        return map.Keys.FirstOrDefault(k =>
+            !string.Equals(k, LastUsernameKey, StringComparison.OrdinalIgnoreCase));
+    }
+
+    public static string? ResolveEmail(string usernameOrEmail)
+    {
+        var value = usernameOrEmail?.Trim() ?? "";
+        if (value.Contains('@', StringComparison.Ordinal))
+        {
+            return value;
+        }
+
+        var map = LoadIdentities();
+        return map.TryGetValue(value, out var email) ? email : null;
+    }
+
+    private static Dictionary<string, string> LoadIdentities()
+    {
+        try
+        {
+            if (!File.Exists(IdentitiesPath))
+            {
+                return new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            }
+
+            var json = File.ReadAllText(IdentitiesPath);
+            var raw = JsonSerializer.Deserialize<Dictionary<string, string>>(json, JsonOptions)
+                      ?? new Dictionary<string, string>();
+            return new Dictionary<string, string>(raw, StringComparer.OrdinalIgnoreCase);
+        }
+        catch
+        {
+            return new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        }
+    }
 
     public static AppAuthConfig LoadOrCreateConfig()
     {

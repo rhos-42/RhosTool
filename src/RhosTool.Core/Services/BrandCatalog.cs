@@ -2,6 +2,10 @@ using RhosTool.Core.Models;
 
 namespace RhosTool.Core.Services;
 
+/// <summary>
+/// Modes et opérations calqués sur UnlockTool (FLASH / META / MTK UNIVERSAL + GENERAL / SPECIAL).
+/// Les opérations licenciées restent PartnerStub ; ADB App Control est opérationnel.
+/// </summary>
 public static class BrandCatalog
 {
     public static IReadOnlyList<BrandModule> All { get; } = Build();
@@ -11,40 +15,43 @@ public static class BrandCatalog
         return new[]
         {
             B("xiaomi", "Mi", "Mi", "#FF6A00", AndroidModes(), XiaomiTabs()),
-            B("samsung", "Samsung", "Samsung", "#1428A0", SamsungModes(), SamsungTabs()),
-            B("huawei", "Huawei", "Huawei", "#CF0A2C", AndroidModes(), GenericAndroidTabs("Huawei")),
+            B("samsung", "Samsung", "Samsung", "#0D47A1", SamsungModes(), SamsungTabs()),
+            B("huawei", "Huawei", "Huawei", "#C62828", AndroidModes(), GenericAndroidTabs("Huawei")),
             B("honor", "Honor", "Honor", "#000000", AndroidModes(), GenericAndroidTabs("Honor")),
-            B("oppo", "Oppo", "Oppo", "#1AAF5D", AndroidModes(), GenericAndroidTabs("Oppo")),
-            B("realme", "Realme", "Realme", "#FFC915", AndroidModes(), GenericAndroidTabs("Realme")),
-            B("vivo", "Vivo", "Vivo", "#415FFF", AndroidModes(), GenericAndroidTabs("Vivo")),
-            B("google", "Google", "Pixel", "#4285F4", AndroidModes(), GenericAndroidTabs("Google Pixel")),
+            B("oppo", "Oppo", "Oppo", "#00A651", AndroidModes(), OppoFamilyTabs("Oppo")),
+            B("realme", "Realme", "Realme", "#FFC107", AndroidModes(), OppoFamilyTabs("Realme")),
+            B("vivo", "Vivo", "Vivo", "#2962FF", AndroidModes(), GenericAndroidTabs("Vivo")),
+            B("google", "Google", "Pixel", "#1E88E5", AndroidModes(), GenericAndroidTabs("Google Pixel")),
             B("sony", "Sony", "Sony", "#000000", AndroidModes(), GenericAndroidTabs("Sony")),
-            B("oneplus", "OnePlus", "OnePlus", "#F5010C", AndroidModes(), GenericAndroidTabs("OnePlus")),
-            B("nothing", "Nothing", "Nothing", "#1A1A1A", AndroidModes(), GenericAndroidTabs("Nothing")),
-            B("motorola", "Motorola", "Motorola", "#5A5A5A", AndroidModes(), GenericAndroidTabs("Motorola")),
-            B("nokia", "Nokia", "Nokia", "#124191", AndroidModes(), GenericAndroidTabs("Nokia")),
-            B("asus", "Asus", "Asus", "#0A1F44", AndroidModes(), GenericAndroidTabs("Asus")),
-            B("lg", "LG", "LG", "#A50034", AndroidModes(), GenericAndroidTabs("LG")),
-            B("lenovo", "Lenovo", "Lenovo", "#E2231A", AndroidModes(), GenericAndroidTabs("Lenovo")),
-            B("zte", "ZTE", "ZTE", "#0A56A8", AndroidModes(), GenericAndroidTabs("ZTE")),
-            B("htc", "HTC", "HTC", "#6D6E71", AndroidModes(), GenericAndroidTabs("HTC")),
-            B("tecno", "Tecno", "Tecno", "#0033A0", AndroidModes(), GenericAndroidTabs("Tecno")),
-            B("infinix", "Infinix", "Infinix", "#00A651", AndroidModes(), GenericAndroidTabs("Infinix")),
-            B("meizu", "Meizu", "Meizu", "#7CB518", AndroidModes(), GenericAndroidTabs("Meizu")),
-            B("vsmart", "Vsmart", "Vsmart", "#8B1E3F", AndroidModes(), GenericAndroidTabs("Vsmart")),
-            B("tcl", "TCL", "TCL", "#E2001A", AndroidModes(), GenericAndroidTabs("TCL")),
-            B("alcatel", "Alcatel", "Alcatel", "#FF6600", AndroidModes(), GenericAndroidTabs("Alcatel")),
-            B("sharp", "Sharp", "Sharp", "#E60012", AndroidModes(), GenericAndroidTabs("Sharp")),
-            B("qualcomm", "Qualcomm", "Qualcomm", "#3253DC", new[] { "EDL TOOLS", "SECURITY" }, QualcommTabs()),
-            B("mediatek", "MediaTek", "MediaTek", "#F2A900", new[] { "BROM TOOLS", "SECURITY" }, MtkTabs()),
-            B("spreadtrum", "Spreadtrum", "Spreadtrum", "#4A5568", new[] { "SPD TOOLS", "SECURITY" }, GenericAndroidTabs("Spreadtrum")),
-            B("android", "Android", "Android", "#3DDC84", new[] { "ADB TOOLS", "SECURITY" }, GenericAndroidTabs("Android")),
-            B("apple", "Apple", "Apple", "#3A3A3A", new[] { "CHECKRA1N", "SECURITY" }, AppleTabs())
+            B("oneplus", "OnePlus", "OnePlus", "#E53935", AndroidModes(), GenericAndroidTabs("OnePlus")),
+            B("nothing", "Nothing", "Nothing", "#000000", AndroidModes(), GenericAndroidTabs("Nothing")),
+            B("motorola", "Motorola", "Motorola", "#616161", AndroidModes(), GenericAndroidTabs("Motorola")),
+            B("nokia", "Nokia", "Nokia", "#0D47A1", AndroidModes(), GenericAndroidTabs("Nokia")),
+            B("asus", "Asus", "Asus", "#0A192F", AndroidModes(), GenericAndroidTabs("Asus")),
+            B("lg", "LG", "LG", "#880E4F", AndroidModes(), GenericAndroidTabs("LG")),
+            B("lenovo", "Lenovo", "Lenovo", "#D32F2F", AndroidModes(), GenericAndroidTabs("Lenovo")),
+            B("zte", "ZTE", "ZTE", "#1565C0", AndroidModes(), GenericAndroidTabs("ZTE")),
+            B("htc", "HTC", "HTC", "#757575", AndroidModes(), GenericAndroidTabs("HTC")),
+            B("tecno", "Tecno", "Tecno", "#1565C0", AndroidModes(), MtkBrandTabs("Tecno")),
+            B("infinix", "Infinix", "Infinix", "#2E7D32", AndroidModes(), MtkBrandTabs("Infinix")),
+            B("itel", "Itel", "Itel", "#00897B", AndroidModes(), MtkBrandTabs("Itel")),
+            B("meizu", "Meizu", "Meizu", "#8BC34A", AndroidModes(), GenericAndroidTabs("Meizu")),
+            B("vsmart", "Vsmart", "Vsmart", "#AD1457", AndroidModes(), GenericAndroidTabs("Vsmart")),
+            B("tcl", "TCL", "TCL", "#D50000", AndroidModes(), GenericAndroidTabs("TCL")),
+            B("alcatel", "Alcatel", "Alcatel", "#EF6C00", AndroidModes(), GenericAndroidTabs("Alcatel")),
+            B("sharp", "Sharp", "Sharp", "#D50000", AndroidModes(), GenericAndroidTabs("Sharp")),
+            B("qualcomm", "Qualcomm", "Qualcomm", "#3949AB", new[] { "EDL TOOLS", "FLASH", "SECURITY" }, QualcommTabs()),
+            B("mediatek", "MediaTek", "MediaTek", "#FFB300", new[] { "FLASH", "META", "MTK UNIVERSAL" }, MtkPlatformTabs()),
+            B("spreadtrum", "Spreadtrum", "Spreadtrum", "#546E7A", new[] { "SPD TOOLS", "FLASH", "SECURITY" }, GenericAndroidTabs("Spreadtrum")),
+            B("android", "Android", "Android", "#43A047", new[] { "ADB TOOLS", "FLASH", "SECURITY" }, GenericAndroidTabs("Android")),
+            B("apple", "Apple", "Apple", "#000000", new[] { "RAMDISK", "SECURITY" }, AppleTabs())
         };
     }
 
-    private static string[] AndroidModes() => new[] { "FLASH", "SECURITY" };
-    private static string[] SamsungModes() => new[] { "ODIN FLASH", "SECURITY" };
+    /// <summary>Onglets mode UnlockTool (capture MTK UNIVERSAL).</summary>
+    private static string[] AndroidModes() => new[] { "FLASH", "META", "MTK UNIVERSAL" };
+
+    private static string[] SamsungModes() => new[] { "ODIN FLASH", "META", "MTK UNIVERSAL" };
 
     private static BrandModule B(
         string id,
@@ -66,94 +73,230 @@ public static class BrandCatalog
         };
     }
 
+    // --- Samsung (Odin + général UT) ---
+
     private static IReadOnlyList<FunctionTab> SamsungTabs() => new[]
     {
-        Tab("odin", "ODIN MODE",
+        GeneralTab(
+            Op("backup-nv", "BACKUP NV", "Service partenaire licencié.", OperationKind.PartnerStub),
+            Op("restore-nv", "RESTORE NV", "Service partenaire licencié.", OperationKind.PartnerStub),
+            Op("erase-nv", "ERASE NV", "Service partenaire licencié.", OperationKind.PartnerStub),
+            Op("format-data", "FORMAT DATA", "Service partenaire licencié.", OperationKind.PartnerStub),
+            Op("erase-frp", "ERASE FRP", "Service partenaire licencié.", OperationKind.PartnerStub),
+            Op("fix-orange", "FIX ORANGE MSG", "Service partenaire licencié.", OperationKind.PartnerStub),
+            Op("read-rpmb", "READ RPMB", "Service partenaire licencié.", OperationKind.PartnerStub),
+            Op("write-rpmb", "WRITE RPMB", "Service partenaire licencié.", OperationKind.PartnerStub),
+            Op("unlock-bl", "UNLOCK BL", "Service partenaire licencié.", OperationKind.PartnerStub),
+            Op("relock-bl", "RELOCK BL", "Service partenaire licencié.", OperationKind.PartnerStub),
+            Op("flash", "FLASH", "Service partenaire licencié.", OperationKind.PartnerStub),
+            Op("flash-back", "FLASH BACK", "Service partenaire licencié.", OperationKind.PartnerStub),
+            Op("auth-bypass", "AUTH BYPASS", "Service partenaire licencié.", OperationKind.PartnerStub)),
+        SpecialTab(
             Op("enter-dl", "[COM] ENTER DOWNLOAD", "Guide mode Download / Odin.", OperationKind.PartnerStub, false),
             Op("enable-adb", "[ODIN] ENABLE ADB", "Vérifie / démarre ADB.", OperationKind.ReadInfo),
-            Op("restore", "[ODIN] RESTORE", "Service partenaire licencié.", OperationKind.PartnerStub),
-            Op("remove-frp", "[ADB] REMOVE FRP", "Service partenaire licencié.", OperationKind.PartnerStub)),
-        Tab("functions", "FUNCTIONS",
+            Op("odin-restore", "[ODIN] RESTORE", "Service partenaire licencié.", OperationKind.PartnerStub),
+            Op("screen-lock", "SCREEN LOCK", "Service partenaire licencié.", OperationKind.PartnerStub),
+            Op("factory", "FACTORY RESET", "Service partenaire licencié.", OperationKind.PartnerStub),
+            Op("skip-pbl", "SKIP PBL", "Service partenaire licencié.", OperationKind.PartnerStub),
+            Op("network", "NETWORK UNLOCK", "Service partenaire licencié.", OperationKind.PartnerStub),
             Op("read-info", "READ INFO", "Infos appareil via ADB.", OperationKind.ReadInfo),
             Op("reboot", "REBOOT", "Redémarrage ADB.", OperationKind.Reboot),
-            Op("reboot-rec", "REBOOT RECOVERY", "Recovery ADB.", OperationKind.RebootRecovery),
-            Op("drivers", "USB DRIVERS", "Gestionnaire de périphériques.", OperationKind.OpenDeviceManager, false),
-            Op("screen", "SCREEN LOCK", "Service partenaire licencié.", OperationKind.PartnerStub),
-            Op("factory", "FACTORY RESET", "Service partenaire licencié.", OperationKind.PartnerStub)),
-        Tab("brom", "BROM | EDL",
-            Op("edl", "ENTER EDL", "Service partenaire licencié.", OperationKind.PartnerStub),
-            Op("brom", "BROM CONNECT", "Service partenaire licencié.", OperationKind.PartnerStub),
-            Op("da", "CUSTOM DA", "Service partenaire licencié.", OperationKind.PartnerStub)),
-        Tab("network", "NETWORK",
-            Op("net", "NETWORK UNLOCK", "Service partenaire licencié.", OperationKind.PartnerStub),
-            Op("imei", "IMEI INFO", "Lecture infos si ADB autorisé.", OperationKind.ReadInfo)),
-        Tab("exynos", "EXYNOS",
-            Op("exy-dl", "[COM] ENTER DOWNLOAD", "Mode Download Exynos.", OperationKind.PartnerStub, false),
-            Op("exy-adb", "[ODIN] ENABLE ADB", "Vérifie ADB.", OperationKind.ReadInfo),
-            Op("exy-rest", "[ODIN] RESTORE", "Service partenaire licencié.", OperationKind.PartnerStub),
-            Op("exy-frp", "[ADB] REMOVE FRP", "Service partenaire licencié.", OperationKind.PartnerStub)),
+            Op("boot-device", "BOOT DEVICE", "Service partenaire licencié.", OperationKind.PartnerStub),
+            Op("drivers", "USB DRIVERS", "Gestionnaire de périphériques.", OperationKind.OpenDeviceManager, false)),
         AppControlTab()
     };
 
+    // --- Xiaomi ---
+
     private static IReadOnlyList<FunctionTab> XiaomiTabs() => new[]
     {
-        Tab("flash", "FASTBOOT",
-            Op("fb", "FASTBOOT DEVICES", "Liste appareils fastboot si dispo.", OperationKind.ReadInfo),
-            Op("reboot-fb", "REBOOT BOOTLOADER", "Redémarrage bootloader.", OperationKind.PartnerStub),
-            Op("read-info", "READ INFO", "Infos ADB.", OperationKind.ReadInfo)),
-        Tab("functions", "FUNCTIONS",
-            Op("reboot", "REBOOT", "Redémarrage ADB.", OperationKind.Reboot),
-            Op("reboot-rec", "REBOOT RECOVERY", "Recovery ADB.", OperationKind.RebootRecovery),
-            Op("drivers", "USB DRIVERS", "Gestionnaire de périphériques.", OperationKind.OpenDeviceManager, false),
-            Op("frp", "ERASE FRP", "Service partenaire licencié.", OperationKind.PartnerStub),
-            Op("account", "MI ACCOUNT", "Service partenaire licencié.", OperationKind.PartnerStub)),
-        Tab("edl", "EDL",
+        GeneralTab(
+            Op("backup-nv", "BACKUP NV", "Service partenaire licencié.", OperationKind.PartnerStub),
+            Op("restore-nv", "RESTORE NV", "Service partenaire licencié.", OperationKind.PartnerStub),
+            Op("erase-nv", "ERASE NV", "Service partenaire licencié.", OperationKind.PartnerStub),
+            Op("format-data", "FORMAT DATA", "Service partenaire licencié.", OperationKind.PartnerStub),
+            Op("erase-frp", "ERASE FRP", "Service partenaire licencié.", OperationKind.PartnerStub),
+            Op("fix-orange", "FIX ORANGE MSG", "Service partenaire licencié.", OperationKind.PartnerStub),
+            Op("read-rpmb", "READ RPMB", "Service partenaire licencié.", OperationKind.PartnerStub),
+            Op("write-rpmb", "WRITE RPMB", "Service partenaire licencié.", OperationKind.PartnerStub),
+            Op("unlock-bl", "UNLOCK BL", "Service partenaire licencié.", OperationKind.PartnerStub),
+            Op("relock-bl", "RELOCK BL", "Service partenaire licencié.", OperationKind.PartnerStub),
+            Op("flash", "FLASH", "Service partenaire licencié.", OperationKind.PartnerStub),
+            Op("flash-back", "FLASH BACK", "Service partenaire licencié.", OperationKind.PartnerStub),
+            Op("auth-bypass", "AUTH BYPASS", "Service partenaire licencié.", OperationKind.PartnerStub)),
+        SpecialTab(
+            Op("mi-account", "MI ACCOUNT", "Service partenaire licencié.", OperationKind.PartnerStub),
+            Op("micloud", "MI CLOUD", "Service partenaire licencié.", OperationKind.PartnerStub),
             Op("edl", "ENTER EDL", "Service partenaire licencié.", OperationKind.PartnerStub),
-            Op("auth", "AUTH FLASH", "Service partenaire licencié.", OperationKind.PartnerStub)),
-        Tab("network", "NETWORK",
-            Op("net", "NETWORK UNLOCK", "Service partenaire licencié.", OperationKind.PartnerStub)),
+            Op("auth-flash", "AUTH FLASH", "Service partenaire licencié.", OperationKind.PartnerStub),
+            Op("factory", "FACTORY RESET", "Service partenaire licencié.", OperationKind.PartnerStub),
+            Op("screen-lock", "SCREEN LOCK", "Service partenaire licencié.", OperationKind.PartnerStub),
+            Op("network", "NETWORK UNLOCK", "Service partenaire licencié.", OperationKind.PartnerStub),
+            Op("read-info", "READ INFO", "Infos ADB.", OperationKind.ReadInfo),
+            Op("reboot", "REBOOT", "Redémarrage ADB.", OperationKind.Reboot),
+            Op("reboot-fb", "REBOOT BOOTLOADER", "Service partenaire licencié.", OperationKind.PartnerStub),
+            Op("boot-device", "BOOT DEVICE", "Service partenaire licencié.", OperationKind.PartnerStub),
+            Op("drivers", "USB DRIVERS", "Gestionnaire de périphériques.", OperationKind.OpenDeviceManager, false)),
+        AppControlTab()
+    };
+
+    // --- MTK-heavy brands (Tecno / Infinix / Itel) ---
+
+    private static IReadOnlyList<FunctionTab> MtkBrandTabs(string brand) => new[]
+    {
+        GeneralTab(
+            Op("backup-nv", "BACKUP NV", "Service partenaire licencié.", OperationKind.PartnerStub),
+            Op("restore-nv", "RESTORE NV", "Service partenaire licencié.", OperationKind.PartnerStub),
+            Op("erase-nv", "ERASE NV", "Service partenaire licencié.", OperationKind.PartnerStub),
+            Op("format-data", "FORMAT DATA", "Service partenaire licencié.", OperationKind.PartnerStub),
+            Op("erase-frp", "ERASE FRP", "Service partenaire licencié.", OperationKind.PartnerStub),
+            Op("fix-orange", "FIX ORANGE MSG", "Service partenaire licencié.", OperationKind.PartnerStub),
+            Op("read-rpmb", "READ RPMB", "Service partenaire licencié.", OperationKind.PartnerStub),
+            Op("write-rpmb", "WRITE RPMB", "Service partenaire licencié.", OperationKind.PartnerStub),
+            Op("unlock-bl", "UNLOCK BL", "Service partenaire licencié.", OperationKind.PartnerStub),
+            Op("relock-bl", "RELOCK BL", "Service partenaire licencié.", OperationKind.PartnerStub),
+            Op("flash", "FLASH", "Service partenaire licencié.", OperationKind.PartnerStub),
+            Op("flash-back", "FLASH BACK", "Service partenaire licencié.", OperationKind.PartnerStub),
+            Op("auth-bypass", "AUTH BYPASS", "Service partenaire licencié.", OperationKind.PartnerStub)),
+        SpecialTab(
+            Op("mtk-meta", "MTK META", $"Mode META {brand} — service partenaire.", OperationKind.PartnerStub),
+            Op("mtk-preloader", "MTK PRELOADER", "Service partenaire licencié.", OperationKind.PartnerStub),
+            Op("custom-da", "CUSTOM DA", "Service partenaire licencié.", OperationKind.PartnerStub),
+            Op("force-brom", "FORCE BROM", "Service partenaire licencié.", OperationKind.PartnerStub),
+            Op("wipe-efs", "WIPE EFS", "Service partenaire licencié.", OperationKind.PartnerStub),
+            Op("factory", "FACTORY RESET", "Service partenaire licencié.", OperationKind.PartnerStub),
+            Op("screen-lock", "SCREEN LOCK", "Service partenaire licencié.", OperationKind.PartnerStub),
+            Op("read-info", "READ INFO", $"Infos {brand} via ADB.", OperationKind.ReadInfo),
+            Op("reboot", "REBOOT", "Redémarrage ADB.", OperationKind.Reboot),
+            Op("boot-device", "BOOT DEVICE", "Service partenaire licencié.", OperationKind.PartnerStub),
+            Op("drivers", "USB DRIVERS", "Gestionnaire de périphériques.", OperationKind.OpenDeviceManager, false)),
+        AppControlTab()
+    };
+
+    private static IReadOnlyList<FunctionTab> OppoFamilyTabs(string brand) => new[]
+    {
+        GeneralTab(
+            Op("backup-nv", "BACKUP NV", "Service partenaire licencié.", OperationKind.PartnerStub),
+            Op("restore-nv", "RESTORE NV", "Service partenaire licencié.", OperationKind.PartnerStub),
+            Op("erase-nv", "ERASE NV", "Service partenaire licencié.", OperationKind.PartnerStub),
+            Op("format-data", "FORMAT DATA", "Service partenaire licencié.", OperationKind.PartnerStub),
+            Op("erase-frp", "ERASE FRP", "Service partenaire licencié.", OperationKind.PartnerStub),
+            Op("fix-orange", "FIX ORANGE MSG", "Service partenaire licencié.", OperationKind.PartnerStub),
+            Op("read-rpmb", "READ RPMB", "Service partenaire licencié.", OperationKind.PartnerStub),
+            Op("write-rpmb", "WRITE RPMB", "Service partenaire licencié.", OperationKind.PartnerStub),
+            Op("unlock-bl", "UNLOCK BL", "Service partenaire licencié.", OperationKind.PartnerStub),
+            Op("relock-bl", "RELOCK BL", "Service partenaire licencié.", OperationKind.PartnerStub),
+            Op("flash", "FLASH", "Service partenaire licencié.", OperationKind.PartnerStub),
+            Op("flash-back", "FLASH BACK", "Service partenaire licencié.", OperationKind.PartnerStub),
+            Op("auth-bypass", "AUTH BYPASS", "Service partenaire licencié.", OperationKind.PartnerStub)),
+        SpecialTab(
+            Op("oppo-id", $"{brand.ToUpperInvariant()} ID", "Service partenaire licencié.", OperationKind.PartnerStub),
+            Op("demo", "DEMO REMOVE", "Service partenaire licencié.", OperationKind.PartnerStub),
+            Op("factory", "FACTORY RESET", "Service partenaire licencié.", OperationKind.PartnerStub),
+            Op("screen-lock", "SCREEN LOCK", "Service partenaire licencié.", OperationKind.PartnerStub),
+            Op("network", "NETWORK UNLOCK", "Service partenaire licencié.", OperationKind.PartnerStub),
+            Op("read-info", "READ INFO", $"Infos {brand} via ADB.", OperationKind.ReadInfo),
+            Op("reboot", "REBOOT", "Redémarrage ADB.", OperationKind.Reboot),
+            Op("boot-device", "BOOT DEVICE", "Service partenaire licencié.", OperationKind.PartnerStub),
+            Op("drivers", "USB DRIVERS", "Gestionnaire de périphériques.", OperationKind.OpenDeviceManager, false)),
         AppControlTab()
     };
 
     private static IReadOnlyList<FunctionTab> GenericAndroidTabs(string brand) => new[]
     {
-        Tab("functions", "FUNCTIONS",
+        GeneralTab(
+            Op("backup-nv", "BACKUP NV", "Service partenaire licencié.", OperationKind.PartnerStub),
+            Op("restore-nv", "RESTORE NV", "Service partenaire licencié.", OperationKind.PartnerStub),
+            Op("erase-nv", "ERASE NV", "Service partenaire licencié.", OperationKind.PartnerStub),
+            Op("format-data", "FORMAT DATA", "Service partenaire licencié.", OperationKind.PartnerStub),
+            Op("erase-frp", "ERASE FRP", "Service partenaire licencié.", OperationKind.PartnerStub),
+            Op("fix-orange", "FIX ORANGE MSG", "Service partenaire licencié.", OperationKind.PartnerStub),
+            Op("read-rpmb", "READ RPMB", "Service partenaire licencié.", OperationKind.PartnerStub),
+            Op("write-rpmb", "WRITE RPMB", "Service partenaire licencié.", OperationKind.PartnerStub),
+            Op("unlock-bl", "UNLOCK BL", "Service partenaire licencié.", OperationKind.PartnerStub),
+            Op("relock-bl", "RELOCK BL", "Service partenaire licencié.", OperationKind.PartnerStub),
+            Op("flash", "FLASH", "Service partenaire licencié.", OperationKind.PartnerStub),
+            Op("flash-back", "FLASH BACK", "Service partenaire licencié.", OperationKind.PartnerStub),
+            Op("auth-bypass", "AUTH BYPASS", "Service partenaire licencié.", OperationKind.PartnerStub)),
+        SpecialTab(
+            Op("factory", "FACTORY RESET", "Service partenaire licencié.", OperationKind.PartnerStub),
+            Op("screen-lock", "SCREEN LOCK", "Service partenaire licencié.", OperationKind.PartnerStub),
+            Op("network", "NETWORK UNLOCK", "Service partenaire licencié.", OperationKind.PartnerStub),
+            Op("edl-brom", "EDL / BROM", "Service partenaire licencié.", OperationKind.PartnerStub),
             Op("read-info", "READ INFO", $"Infos {brand} via ADB.", OperationKind.ReadInfo),
             Op("reboot", "REBOOT", "Redémarrage ADB.", OperationKind.Reboot),
             Op("reboot-rec", "REBOOT RECOVERY", "Recovery ADB.", OperationKind.RebootRecovery),
-            Op("drivers", "USB DRIVERS", "Gestionnaire de périphériques.", OperationKind.OpenDeviceManager, false),
-            Op("frp", "ERASE FRP", "Service partenaire licencié.", OperationKind.PartnerStub),
-            Op("factory", "FACTORY RESET", "Service partenaire licencié.", OperationKind.PartnerStub)),
-        Tab("edl", "BROM | EDL",
-            Op("edl", "ENTER EDL / BROM", "Service partenaire licencié.", OperationKind.PartnerStub)),
-        Tab("network", "NETWORK",
-            Op("net", "NETWORK UNLOCK", "Service partenaire licencié.", OperationKind.PartnerStub)),
+            Op("boot-device", "BOOT DEVICE", "Service partenaire licencié.", OperationKind.PartnerStub),
+            Op("drivers", "USB DRIVERS", "Gestionnaire de périphériques.", OperationKind.OpenDeviceManager, false)),
         AppControlTab()
     };
 
     private static IReadOnlyList<FunctionTab> QualcommTabs() => new[]
     {
-        Tab("edl", "EDL",
+        GeneralTab(
             Op("edl", "QUALCOMM EDL", "Service partenaire licencié.", OperationKind.PartnerStub),
             Op("firehose", "FIREHOSE", "Service partenaire licencié.", OperationKind.PartnerStub),
-            Op("drivers", "USB DRIVERS", "Gestionnaire de périphériques.", OperationKind.OpenDeviceManager, false)),
-        Tab("functions", "FUNCTIONS",
+            Op("format-data", "FORMAT DATA", "Service partenaire licencié.", OperationKind.PartnerStub),
+            Op("erase-frp", "ERASE FRP", "Service partenaire licencié.", OperationKind.PartnerStub),
+            Op("flash", "FLASH", "Service partenaire licencié.", OperationKind.PartnerStub),
+            Op("auth-bypass", "AUTH BYPASS", "Service partenaire licencié.", OperationKind.PartnerStub)),
+        SpecialTab(
             Op("read-info", "READ INFO", "Infos ADB.", OperationKind.ReadInfo),
-            Op("frp", "ERASE FRP", "Service partenaire licencié.", OperationKind.PartnerStub)),
+            Op("reboot", "REBOOT", "Redémarrage ADB.", OperationKind.Reboot),
+            Op("drivers", "USB DRIVERS", "Gestionnaire de périphériques.", OperationKind.OpenDeviceManager, false)),
         AppControlTab()
     };
 
-    private static IReadOnlyList<FunctionTab> MtkTabs() => new[]
+    private static IReadOnlyList<FunctionTab> MtkPlatformTabs() => new[]
     {
-        Tab("brom", "BROM",
+        GeneralTab(
+            Op("backup-nv", "BACKUP NV", "Service partenaire licencié.", OperationKind.PartnerStub),
+            Op("restore-nv", "RESTORE NV", "Service partenaire licencié.", OperationKind.PartnerStub),
+            Op("erase-nv", "ERASE NV", "Service partenaire licencié.", OperationKind.PartnerStub),
+            Op("format-data", "FORMAT DATA", "Service partenaire licencié.", OperationKind.PartnerStub),
+            Op("erase-frp", "ERASE FRP", "Service partenaire licencié.", OperationKind.PartnerStub),
+            Op("fix-orange", "FIX ORANGE MSG", "Service partenaire licencié.", OperationKind.PartnerStub),
+            Op("read-rpmb", "READ RPMB", "Service partenaire licencié.", OperationKind.PartnerStub),
+            Op("write-rpmb", "WRITE RPMB", "Service partenaire licencié.", OperationKind.PartnerStub),
+            Op("unlock-bl", "UNLOCK BL", "Service partenaire licencié.", OperationKind.PartnerStub),
+            Op("relock-bl", "RELOCK BL", "Service partenaire licencié.", OperationKind.PartnerStub),
+            Op("flash", "FLASH", "Service partenaire licencié.", OperationKind.PartnerStub),
+            Op("flash-back", "FLASH BACK", "Service partenaire licencié.", OperationKind.PartnerStub),
+            Op("auth-bypass", "AUTH BYPASS", "Service partenaire licencié.", OperationKind.PartnerStub)),
+        SpecialTab(
             Op("brom", "MTK BROM", "Service partenaire licencié.", OperationKind.PartnerStub),
-            Op("da", "CUSTOM DA", "Service partenaire licencié.", OperationKind.PartnerStub),
-            Op("drivers", "USB DRIVERS", "Gestionnaire de périphériques.", OperationKind.OpenDeviceManager, false)),
-        Tab("functions", "FUNCTIONS",
+            Op("meta", "MTK META", "Service partenaire licencié.", OperationKind.PartnerStub),
+            Op("custom-da", "CUSTOM DA", "Service partenaire licencié.", OperationKind.PartnerStub),
+            Op("force-brom", "FORCE BROM", "Service partenaire licencié.", OperationKind.PartnerStub),
             Op("read-info", "READ INFO", "Infos ADB.", OperationKind.ReadInfo),
-            Op("frp", "ERASE FRP", "Service partenaire licencié.", OperationKind.PartnerStub)),
+            Op("reboot", "REBOOT", "Redémarrage ADB.", OperationKind.Reboot),
+            Op("boot-device", "BOOT DEVICE", "Service partenaire licencié.", OperationKind.PartnerStub),
+            Op("drivers", "USB DRIVERS", "Gestionnaire de périphériques.", OperationKind.OpenDeviceManager, false)),
         AppControlTab()
     };
+
+    private static IReadOnlyList<FunctionTab> AppleTabs() => new[]
+    {
+        Tab("general", "GENERAL",
+            Op("backup-pass", "BACKUP PASSCODE", "Service partenaire licencié (ramdisk).", OperationKind.PartnerStub),
+            Op("restore-pass", "RESTORE PASSCODE", "Service partenaire licencié (ramdisk).", OperationKind.PartnerStub),
+            Op("read-account", "READ ACCOUNT", "Service partenaire licencié.", OperationKind.PartnerStub),
+            Op("read-hw", "READ HW INFO", "Service partenaire licencié.", OperationKind.PartnerStub),
+            Op("read-ios", "READ iOS", "Infos iOS si ideviceinfo.", OperationKind.ReadInfo),
+            Op("factory", "FACTORY RESET", "Service partenaire licencié.", OperationKind.PartnerStub),
+            Op("hidden-account", "HIDDEN ACCOUNT", "Service partenaire licencié.", OperationKind.PartnerStub)),
+        Tab("special", "SPECIAL",
+            Op("icloud", "ICLOUD / ACTIVATION", "Service partenaire licencié.", OperationKind.PartnerStub),
+            Op("mdm", "MDM", "Service partenaire licencié.", OperationKind.PartnerStub),
+            Op("network", "NETWORK UNLOCK", "Service partenaire licencié.", OperationKind.PartnerStub),
+            Op("drivers", "USB DRIVERS", "Gestionnaire de périphériques.", OperationKind.OpenDeviceManager, false))
+    };
+
+    private static FunctionTab GeneralTab(params DeviceOperation[] ops) =>
+        Tab("general", "GENERAL", ops);
+
+    private static FunctionTab SpecialTab(params DeviceOperation[] ops) =>
+        Tab("special", "SPECIAL", ops);
 
     private static FunctionTab AppControlTab() => Tab("appctl", "ADB APP CONTROL",
         Op("list-pkgs", "LIST PACKAGES", "Liste tous les packages installés.", OperationKind.AdbAppControl),
@@ -168,18 +311,6 @@ public static class BrandCatalog
         Op("launch-app", "LAUNCH APP", "Lance l'activité launcher du package.", OperationKind.AdbAppControl),
         Op("app-info", "APP INFO", "Affiche version / chemin APK du package.", OperationKind.AdbAppControl),
         Op("pull-apk", "PULL APK", "Extrait l'APK du package vers le PC.", OperationKind.AdbAppControl));
-
-
-    private static IReadOnlyList<FunctionTab> AppleTabs() => new[]
-    {
-        Tab("info", "INFO",
-            Op("read-info", "READ INFO", "Infos iOS si ideviceinfo.", OperationKind.ReadInfo),
-            Op("drivers", "USB DRIVERS", "Gestionnaire de périphériques.", OperationKind.OpenDeviceManager, false)),
-        Tab("security", "SECURITY",
-            Op("icloud", "ICLOUD / ACTIVATION", "Service partenaire licencié.", OperationKind.PartnerStub),
-            Op("mdm", "MDM", "Service partenaire licencié.", OperationKind.PartnerStub),
-            Op("net", "NETWORK UNLOCK", "Service partenaire licencié.", OperationKind.PartnerStub))
-    };
 
     private static FunctionTab Tab(string id, string title, params DeviceOperation[] ops) =>
         new() { Id = id, Title = title, Operations = ops };

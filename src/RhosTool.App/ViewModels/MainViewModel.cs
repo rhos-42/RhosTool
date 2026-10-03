@@ -195,6 +195,7 @@ public partial class MainViewModel : ObservableObject
             ModeTabs.Add(m);
         }
 
+        // Style UnlockTool : dernier mode (MTK UNIVERSAL / SECURITY) actif par défaut
         SelectedModeTab = ModeTabs.LastOrDefault() ?? ModeTabs.FirstOrDefault();
 
         FunctionTabs.Clear();
@@ -203,7 +204,8 @@ public partial class MainViewModel : ObservableObject
             FunctionTabs.Add(t);
         }
 
-        SelectedFunctionTab = FunctionTabs.LastOrDefault() ?? FunctionTabs.FirstOrDefault();
+        // GENERAL en premier (comme le panneau 1-Click UnlockTool)
+        SelectedFunctionTab = FunctionTabs.FirstOrDefault();
 
         _brandModels = ModelCatalog.ForBrand(SelectedBrand.Id).ToList();
         ModelCountText = $"{_brandModels.Count:N0} models";
@@ -228,7 +230,8 @@ public partial class MainViewModel : ObservableObject
         {
             q = q.Where(m =>
                 m.DisplayName.Contains(filter, StringComparison.OrdinalIgnoreCase) ||
-                m.ModelCode.Contains(filter, StringComparison.OrdinalIgnoreCase) ||
+                m.Series.Contains(filter, StringComparison.OrdinalIgnoreCase) ||
+                m.MatchesCode(filter) ||
                 m.Chipset.Contains(filter, StringComparison.OrdinalIgnoreCase));
         }
 
@@ -323,7 +326,7 @@ public partial class MainViewModel : ObservableObject
         string? userInput = null;
         if (operation.Kind == OperationKind.AdbAppControl)
         {
-            userInput = ResolveAppControlInput(operation);
+            userInput = await ResolveAppControlInputAsync(operation);
             if (userInput is null && NeedsUserInput(operation.Id))
             {
                 return;
@@ -403,7 +406,10 @@ public partial class MainViewModel : ObservableObject
     private static bool NeedsUserInput(string operationId) =>
         operationId is not ("list-pkgs" or "list-3rd");
 
-    private string? ResolveAppControlInput(DeviceOperation operation)
+    private static bool NeedsPackagePick(string operationId) =>
+        operationId is not ("list-pkgs" or "list-3rd" or "install");
+
+    private async Task<string?> ResolveAppControlInputAsync(DeviceOperation operation)
     {
         var owner = Application.Current?.MainWindow!;
 
@@ -426,7 +432,7 @@ public partial class MainViewModel : ObservableObject
 
             case "pull-apk":
             {
-                var package = InputDialog.Prompt(owner, "ADB App Control", "Nom du package :", LastPackageName);
+                var package = await PickPackageAsync(owner, operation.Title);
                 if (string.IsNullOrWhiteSpace(package)) return null;
                 LastPackageName = package;
 
@@ -446,11 +452,7 @@ public partial class MainViewModel : ObservableObject
             case "clear-data":
             case "disable-app":
             {
-                var package = InputDialog.Prompt(
-                    owner,
-                    "ADB App Control",
-                    $"{operation.Title}\nNom du package :",
-                    LastPackageName);
+                var package = await PickPackageAsync(owner, operation.Title);
                 if (string.IsNullOrWhiteSpace(package)) return null;
 
                 var confirm = MessageBox.Show(
@@ -466,15 +468,69 @@ public partial class MainViewModel : ObservableObject
 
             default:
             {
-                var package = InputDialog.Prompt(
-                    owner,
-                    "ADB App Control",
-                    $"{operation.Title}\nNom du package (ex: com.android.settings) :",
-                    LastPackageName);
+                if (!NeedsPackagePick(operation.Id))
+                {
+                    return null;
+                }
+
+                var package = await PickPackageAsync(owner, operation.Title);
                 if (string.IsNullOrWhiteSpace(package)) return null;
                 LastPackageName = package;
                 return package;
             }
+        }
+    }
+
+    private async Task<string?> PickPackageAsync(Window owner, string title)
+    {
+        var serial = ConnectedDevice?.Serial;
+        if (string.IsNullOrWhiteSpace(serial) || ConnectedDevice?.Platform != DevicePlatform.Android)
+        {
+            return InputDialog.Prompt(
+                owner,
+                "ADB App Control",
+                $"{title}\nNom du package (ex: com.android.settings) :",
+                LastPackageName);
+        }
+
+        try
+        {
+            _log.Info("Chargement des packages…");
+            var third = await _adb.GetPackageListAsync(serial, thirdPartyOnly: true);
+            var all = await _adb.GetPackageListAsync(serial, thirdPartyOnly: false);
+
+            var picker = new PackagePickerWindow(
+                owner,
+                title,
+                all,
+                third,
+                LastPackageName,
+                preferThirdParty: true);
+
+            if (picker.ShowDialog() != true)
+            {
+                return null;
+            }
+
+            if (picker.UseManualEntry)
+            {
+                return InputDialog.Prompt(
+                    owner,
+                    "ADB App Control",
+                    $"{title}\nNom du package :",
+                    LastPackageName);
+            }
+
+            return picker.SelectedPackage;
+        }
+        catch (Exception ex)
+        {
+            _log.Warn($"Liste packages indisponible : {ex.Message}");
+            return InputDialog.Prompt(
+                owner,
+                "ADB App Control",
+                $"{title}\nNom du package :",
+                LastPackageName);
         }
     }
 

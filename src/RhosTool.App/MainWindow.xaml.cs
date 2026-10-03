@@ -1,6 +1,7 @@
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
+using RhosTool.App.Services;
 using RhosTool.App.ViewModels;
 
 namespace RhosTool.App;
@@ -16,17 +17,35 @@ public partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
+        WindowScreenFit.Apply(this, preferredWidth: 1280, preferredHeight: 820, minWidth: 720, minHeight: 480);
         Loaded += OnLoaded;
-        StateChanged += (_, _) => UpdateMaxRestoreGlyph();
+        SizeChanged += (_, _) => UpdateBrandStripHeight();
+        StateChanged += (_, _) =>
+        {
+            UpdateMaxRestoreGlyph();
+            Dispatcher.BeginInvoke(UpdateBrandStripHeight);
+        };
         UpdateMaxRestoreGlyph();
+        UpdateBrandStripHeight();
     }
 
     private async void OnLoaded(object sender, RoutedEventArgs e)
     {
+        UpdateBrandStripHeight();
         if (DataContext is MainViewModel vm)
         {
             await vm.InitializeAsync();
         }
+    }
+
+    private void UpdateBrandStripHeight()
+    {
+        if (BrandRowDef is null || ActualWidth <= 0)
+        {
+            return;
+        }
+
+        BrandRowDef.Height = new GridLength(WindowScreenFit.BrandStripHeight(ActualWidth));
     }
 
     private void Brands_PreviewMouseWheel(object sender, MouseWheelEventArgs e) =>
@@ -69,7 +88,6 @@ public partial class MainWindow : Window
             return;
         }
 
-        // Comme UnlockTool : carré simple en mode normal, doubles carrés si maximisé
         MaxRestoreGlyph.Data = WindowState == WindowState.Maximized
             ? MaxRestoredGeometry
             : MaxNormalGeometry;

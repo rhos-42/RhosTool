@@ -161,8 +161,50 @@ public sealed class AuthService
                 return AuthResult.Ok(CurrentSession!, "Compte créé.");
             }
 
-            return AuthResult.Fail(
+            return AuthResult.Succeed(
                 "Compte créé. Si la confirmation email est active, validez votre boîte mail puis connectez-vous.");
+        }
+        catch (TaskCanceledException)
+        {
+            return AuthResult.Fail("Délai dépassé — vérifiez votre connexion.");
+        }
+        catch (Exception ex)
+        {
+            return AuthResult.Fail($"Erreur réseau : {ex.Message}");
+        }
+    }
+
+    public async Task<AuthResult> RecoverPasswordAsync(string email, CancellationToken ct = default)
+    {
+        if (!EnsureConfigured(out var fail))
+        {
+            return fail;
+        }
+
+        email = email.Trim();
+        if (string.IsNullOrWhiteSpace(email) || !email.Contains('@'))
+        {
+            return AuthResult.Fail("Email requis pour réinitialiser le mot de passe.");
+        }
+
+        try
+        {
+            var url = $"{NormalizeUrl(_config.SupabaseUrl)}/auth/v1/recover";
+            using var req = CreateRequest(HttpMethod.Post, url);
+            req.Content = new StringContent(
+                JsonSerializer.Serialize(new { email }, JsonOptions),
+                Encoding.UTF8,
+                "application/json");
+
+            using var res = await _http.SendAsync(req, ct).ConfigureAwait(false);
+            var body = await res.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
+            if (!res.IsSuccessStatusCode)
+            {
+                return AuthResult.Fail(ExtractError(body) ?? $"Échec récupération ({(int)res.StatusCode}).");
+            }
+
+            return AuthResult.Succeed(
+                "Email de réinitialisation envoyé. Vérifiez votre boîte mail.");
         }
         catch (TaskCanceledException)
         {

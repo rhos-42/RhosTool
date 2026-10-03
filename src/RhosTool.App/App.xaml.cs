@@ -1,4 +1,5 @@
 using System.Windows;
+using System.Windows.Threading;
 using RhosTool.App.Services;
 using RhosTool.App.ViewModels;
 using RhosTool.Core.Services;
@@ -13,32 +14,54 @@ public partial class App : Application
     {
         base.OnStartup(e);
 
-        var config = LocalAuthStore.LoadOrCreateConfig();
-        Auth = new AuthService(config);
+        // Empêche la fermeture auto quand LoginWindow se ferme (sinon plus de MainWindow)
+        ShutdownMode = ShutdownMode.OnExplicitShutdown;
 
-        var restored = LocalAuthStore.LoadSession();
-        if (restored is not null && Auth.IsConfigured)
+        DispatcherUnhandledException += OnDispatcherUnhandledException;
+        AppDomain.CurrentDomain.UnhandledException += (_, args) =>
         {
-            var restore = await Auth.RestoreSessionAsync(restored);
-            if (restore.Success && Auth.CurrentSession is not null)
+            var ex = args.ExceptionObject as Exception;
+            MessageBox.Show(ex?.ToString() ?? "Erreur fatale", "RhosTool", MessageBoxButton.OK, MessageBoxImage.Error);
+        };
+
+        try
+        {
+            var config = LocalAuthStore.LoadOrCreateConfig();
+            Auth = new AuthService(config);
+
+            var restored = LocalAuthStore.LoadSession();
+            if (restored is not null && Auth.IsConfigured)
             {
-                LocalAuthStore.SaveSession(Auth.CurrentSession);
-                ShowMain();
+                var restore = await Auth.RestoreSessionAsync(restored);
+                if (restore.Success && Auth.CurrentSession is not null)
+                {
+                    LocalAuthStore.SaveSession(Auth.CurrentSession);
+                    ShowMain();
+                    return;
+                }
+
+                LocalAuthStore.ClearSession();
+            }
+
+            var login = new LoginWindow(Auth);
+            var ok = login.ShowDialog() == true && Auth.IsAuthenticated;
+            if (!ok)
+            {
+                Shutdown();
                 return;
             }
 
-            LocalAuthStore.ClearSession();
+            ShowMain();
         }
-
-        var login = new LoginWindow(Auth);
-        var ok = login.ShowDialog() == true && Auth.IsAuthenticated;
-        if (!ok)
+        catch (Exception ex)
         {
+            MessageBox.Show(
+                "Démarrage impossible :\n" + ex.Message,
+                "RhosTool",
+                MessageBoxButton.OK,
+                MessageBoxImage.Error);
             Shutdown();
-            return;
         }
-
-        ShowMain();
     }
 
     private void ShowMain()
@@ -48,6 +71,18 @@ public partial class App : Application
             DataContext = new MainViewModel(Auth)
         };
         MainWindow = main;
+        ShutdownMode = ShutdownMode.OnMainWindowClose;
         main.Show();
+        main.Activate();
+    }
+
+    private void OnDispatcherUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
+    {
+        MessageBox.Show(
+            "Erreur :\n" + e.Exception.Message,
+            "RhosTool",
+            MessageBoxButton.OK,
+            MessageBoxImage.Error);
+        e.Handled = true;
     }
 }

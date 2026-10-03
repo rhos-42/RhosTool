@@ -5,12 +5,12 @@
         Title="RhosTool"
         Width="1280"
         Height="820"
-        MinWidth="900"
-        MinHeight="560"
+        MinWidth="720"
+        MinHeight="480"
         WindowStyle="None"
         ResizeMode="CanResize"
         Background="#FF2A2A2A"
-        WindowStartupLocation="CenterScreen"
+        WindowStartupLocation="Manual"
         UseLayoutRounding="True"
         SnapsToDevicePixels="True"
         TextOptions.TextFormattingMode="Display"
@@ -27,8 +27,8 @@
     <Grid>
       <Grid.RowDefinitions>
         <RowDefinition Height="30" />
-        <RowDefinition Height="126" />
-        <RowDefinition Height="*" />
+        <RowDefinition x:Name="BrandRowDef" Height="150" MinHeight="120" MaxHeight="182" />
+        <RowDefinition Height="*" MinHeight="220" />
         <RowDefinition Height="26" />
       </Grid.RowDefinitions>
 
@@ -99,12 +99,12 @@
         </Grid>
       </Border>
 
-      <!-- Brands (3×10 = 30 marques, toutes visibles sans scroll) -->
+      <!-- Brands UnlockTool-style (3×10, double bordure + marge aux extrémités) -->
       <Border Grid.Row="1"
-              Background="#FF2A2A2A"
+              Background="#FF1E1E1E"
               BorderBrush="#FF484848"
               BorderThickness="0,0,0,1"
-              Padding="4,2"
+              Padding="8,4,8,4"
               ClipToBounds="True">
         <ListBox ItemsSource="{Binding Brands}"
                  SelectedItem="{Binding SelectedBrand}"
@@ -125,12 +125,15 @@
           <ListBox.ItemTemplate>
             <DataTemplate>
               <TextBlock Text="{Binding ShortName}"
+                         FontFamily="Segoe UI"
                          FontWeight="Bold"
-                         FontSize="10"
+                         FontSize="12"
                          Foreground="White"
-                         TextTrimming="CharacterEllipsis">
+                         TextAlignment="Center"
+                         TextTrimming="CharacterEllipsis"
+                         TextOptions.TextFormattingMode="Display">
                 <TextBlock.Effect>
-                  <DropShadowEffect BlurRadius="3" ShadowDepth="1" Opacity="0.85" Color="#FF000000" />
+                  <DropShadowEffect BlurRadius="2" ShadowDepth="1" Opacity="0.65" Color="#FF000000" />
                 </TextBlock.Effect>
               </TextBlock>
             </DataTemplate>
@@ -143,11 +146,11 @@
         <Rectangle Fill="{StaticResource BrushGridMesh}" IsHitTestVisible="False" />
         <Grid>
           <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="300" MinWidth="180" />
+            <ColumnDefinition Width="2.2*" MinWidth="160" />
             <ColumnDefinition Width="5" />
-            <ColumnDefinition Width="*" MinWidth="260" />
+            <ColumnDefinition Width="3*" MinWidth="200" />
             <ColumnDefinition Width="5" />
-            <ColumnDefinition Width="420" MinWidth="280" />
+            <ColumnDefinition Width="2.8*" MinWidth="220" />
           </Grid.ColumnDefinitions>
 
           <!-- LEFT -->
@@ -238,13 +241,18 @@
                 <ListBox.ItemTemplate>
                   <DataTemplate>
                     <StackPanel>
+                      <TextBlock Text="{Binding Series}"
+                                 Foreground="#FF8A8A8A"
+                                 FontSize="10"
+                                 FontWeight="SemiBold"
+                                 Margin="0,0,0,2" />
                       <TextBlock Text="{Binding DisplayName}"
                                  Foreground="{StaticResource BrushAccentText}"
                                  FontWeight="SemiBold"
                                  TextWrapping="Wrap" />
-                      <TextBlock Margin="0,2,0,0" FontSize="11">
-                        <Run Text="{Binding ModelCode, Mode=OneWay}" Foreground="#FFF5F5F5" />
-                        <Run Text=" - " Foreground="#FF9E9E9E" />
+                      <TextBlock Margin="0,2,0,0" FontSize="11" TextWrapping="Wrap">
+                        <Run Text="{Binding CodesDisplay, Mode=OneWay}" Foreground="#FFF5F5F5" />
+                        <Run Text=" — " Foreground="#FF9E9E9E" />
                         <Run Text="{Binding Chipset, Mode=OneWay}" Foreground="#FFBDBDBD" />
                       </TextBlock>
                       <ItemsControl ItemsSource="{Binding Tags}" Margin="0,5,0,0">
@@ -309,21 +317,22 @@
                       Margin="0,0,0,12">
                 <Grid>
                   <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="160" />
+                    <ColumnDefinition Width="*" MinWidth="120" />
+                    <ColumnDefinition Width="Auto" MinWidth="120" MaxWidth="180" />
                   </Grid.ColumnDefinitions>
-                  <TextBlock TextWrapping="Wrap" VerticalAlignment="Center">
+                  <TextBlock TextWrapping="Wrap" VerticalAlignment="Center" TextTrimming="CharacterEllipsis">
                     <Run Text="Model: " Foreground="#FFBDBDBD" />
                     <Run Text="{Binding SelectedModel.DisplayName, Mode=OneWay}" Foreground="White" FontWeight="SemiBold" />
                   </TextBlock>
-                  <DockPanel Grid.Column="1">
+                  <DockPanel Grid.Column="1" Margin="8,0,0,0">
                     <TextBlock Text="Chip"
                                Foreground="#FFBDBDBD"
                                VerticalAlignment="Center"
                                Margin="0,0,8,0" />
                     <ComboBox ItemsSource="{Binding ChipOptions}"
                               SelectedItem="{Binding SelectedChip}"
-                              Style="{StaticResource DarkCombo}" />
+                              Style="{StaticResource DarkCombo}"
+                              MinWidth="100" />
                   </DockPanel>
                 </Grid>
               </Border>
@@ -358,18 +367,23 @@
                   BorderThickness="1,0,0,0"
                   Padding="10">
             <DockPanel>
-              <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,10">
-                <Button Content="ADB" Style="{StaticResource UtilButton}" Command="{Binding CheckAdbCommand}" />
-                <Button Content="FAST&#x0a;BOOT" Style="{StaticResource UtilButton}" Command="{Binding RefreshNowCommand}" />
-                <Button Content="T.POINT" Style="{StaticResource UtilButton}" Command="{Binding OpenConfigCommand}" />
-                <Button Content="DEVMGR" Style="{StaticResource UtilButton}" Command="{Binding OpenDeviceManagerCommand}" />
-                <Button Content="CONFIG" Style="{StaticResource UtilButton}" Command="{Binding OpenConfigCommand}" />
-              </StackPanel>
+              <ScrollViewer DockPanel.Dock="Top"
+                            HorizontalScrollBarVisibility="Auto"
+                            VerticalScrollBarVisibility="Disabled"
+                            Margin="0,0,0,10">
+                <UniformGrid Rows="1" Columns="5">
+                  <Button Content="ADB" Style="{StaticResource UtilButton}" Margin="0,0,4,0" Command="{Binding CheckAdbCommand}" />
+                  <Button Content="FAST&#x0a;BOOT" Style="{StaticResource UtilButton}" Margin="0,0,4,0" Command="{Binding RefreshNowCommand}" />
+                  <Button Content="T.POINT" Style="{StaticResource UtilButton}" Margin="0,0,4,0" Command="{Binding OpenConfigCommand}" />
+                  <Button Content="DEVMGR" Style="{StaticResource UtilButton}" Margin="0,0,4,0" Command="{Binding OpenDeviceManagerCommand}" />
+                  <Button Content="CONFIG" Style="{StaticResource UtilButton}" Margin="0" Command="{Binding OpenConfigCommand}" />
+                </UniformGrid>
+              </ScrollViewer>
 
               <Grid DockPanel.Dock="Top" Margin="0,0,0,10">
                 <Grid.ColumnDefinitions>
-                  <ColumnDefinition Width="*" />
-                  <ColumnDefinition Width="100" />
+                  <ColumnDefinition Width="*" MinWidth="100" />
+                  <ColumnDefinition Width="Auto" MinWidth="72" MaxWidth="110" />
                   <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
                 <Border Background="{StaticResource BrushBgInput}"
@@ -377,7 +391,7 @@
                         BorderThickness="1"
                         Padding="8,7"
                         Margin="0,0,6,0">
-                  <TextBlock>
+                  <TextBlock TextTrimming="CharacterEllipsis">
                     <Run Text="USB  " Foreground="{StaticResource BrushAccent}" FontWeight="Bold" />
                     <Run Text="{Binding UsbStatus, Mode=OneWay}" Foreground="White" />
                   </TextBlock>
@@ -386,9 +400,11 @@
                           ItemsSource="{Binding ComPorts}"
                           SelectedItem="{Binding SelectedComPort}"
                           Style="{StaticResource DarkCombo}"
-                          Margin="0,0,6,0" />
+                          Margin="0,0,6,0"
+                          MinWidth="72" />
                 <CheckBox Grid.Column="2"
-                          Content="Fast Connect"
+                          Content="Fast"
+                          ToolTip="Fast Connect"
                           IsChecked="{Binding FastConnect}"
                           Foreground="White"
                           VerticalAlignment="Center" />
@@ -479,10 +495,10 @@
             <ColumnDefinition Width="Auto" />
             <ColumnDefinition Width="Auto" />
           </Grid.ColumnDefinitions>
-          <TextBlock Text="{Binding ServerStatus}" VerticalAlignment="Center" Foreground="#FFF0F0F0" FontSize="11" />
-          <TextBlock Grid.Column="1" Text="{Binding CreditsDisplay}" VerticalAlignment="Center" Foreground="{StaticResource BrushAccent}" FontWeight="SemiBold" FontSize="11" Margin="0,0,16,0" />
-          <TextBlock Grid.Column="2" Text="{Binding PcName}" VerticalAlignment="Center" Foreground="#FFF5F5F5" Margin="0,0,14,0" FontSize="11" />
-          <TextBlock Grid.Column="3" Text="{Binding UserDisplay}" VerticalAlignment="Center" Margin="0,0,14,0" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource BrushAccent}" />
+          <TextBlock Text="{Binding ServerStatus}" VerticalAlignment="Center" Foreground="#FFF0F0F0" FontSize="11" TextTrimming="CharacterEllipsis" Margin="0,0,8,0" />
+          <TextBlock Grid.Column="1" Text="{Binding CreditsDisplay}" VerticalAlignment="Center" Foreground="{StaticResource BrushAccent}" FontWeight="SemiBold" FontSize="11" Margin="0,0,12,0" />
+          <TextBlock Grid.Column="2" Text="{Binding PcName}" VerticalAlignment="Center" Foreground="#FFF5F5F5" Margin="0,0,12,0" FontSize="11" TextTrimming="CharacterEllipsis" MaxWidth="120" />
+          <TextBlock Grid.Column="3" Text="{Binding UserDisplay}" VerticalAlignment="Center" Margin="0,0,12,0" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource BrushAccent}" TextTrimming="CharacterEllipsis" MaxWidth="140" />
           <TextBlock Grid.Column="4" Text="{Binding ClockText}" VerticalAlignment="Center" Foreground="#FFF0F0F0" FontSize="11" />
         </Grid>
       </Border>

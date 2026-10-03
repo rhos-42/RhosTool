@@ -35,6 +35,9 @@ public sealed class AuthResult
     public static AuthResult Ok(AuthSession session, string message = "OK") =>
         new() { Success = true, Message = message, Session = session };
 
+    public static AuthResult Succeed(string message) =>
+        new() { Success = true, Message = message };
+
     public static AuthResult Fail(string message) =>
         new() { Success = false, Message = message };
 }
