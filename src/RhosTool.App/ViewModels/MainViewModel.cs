@@ -18,6 +18,8 @@ public partial class MainViewModel : ObservableObject
     private readonly LogService _log;
     private readonly AdbService _adb;
     private readonly IosDeviceService _ios;
+    private readonly FirmwarePackService _packs;
+    private readonly FastbootService _fastboot;
     private readonly OperationRunner _runner;
     private readonly AuthService _auth;
     private readonly DispatcherTimer _pollTimer;
@@ -33,7 +35,9 @@ public partial class MainViewModel : ObservableObject
         _log = new LogService();
         _adb = new AdbService(_log);
         _ios = new IosDeviceService(_log);
-        _runner = new OperationRunner(_adb, _ios, _log);
+        _packs = new FirmwarePackService();
+        _fastboot = new FastbootService(_log);
+        _runner = new OperationRunner(_adb, _ios, _log, _packs, _fastboot);
 
         _log.LineAdded += line =>
         {
@@ -111,6 +115,8 @@ public partial class MainViewModel : ObservableObject
     [ObservableProperty] private Brush connectionBrush = MakeBrush(0xFF, 0x98, 0x00);
 
     [ObservableProperty] private string lastPackageName = "com.android.settings";
+    [ObservableProperty] private string packStatusText = "Pack: —";
+    [ObservableProperty] private string packPathText = "";
 
     public ObservableCollection<string> ChipOptions { get; } = new()
     {
@@ -313,13 +319,16 @@ public partial class MainViewModel : ObservableObject
     {
         if (operation is null || IsBusy) return;
 
-        if (operation.Kind is OperationKind.Reboot or OperationKind.RebootRecovery)
+        if (operation.Kind is OperationKind.Reboot or OperationKind.RebootRecovery ||
+            operation.Id is "factory" or "format-data" or "boot-device" or "reboot-fb" or "reboot" or "reboot-rec")
         {
             var ok = MessageBox.Show(
-                $"Confirm {operation.Title} ?",
+                operation.Id is "factory" or "format-data"
+                    ? $"{operation.Title} va réinitialiser l'appareil (données perdues).\nContinuer ?"
+                    : $"Confirmer {operation.Title} ?",
                 "RhosTool",
                 MessageBoxButton.YesNo,
-                MessageBoxImage.Question);
+                MessageBoxImage.Warning);
             if (ok != MessageBoxResult.Yes) return;
         }
 
@@ -328,6 +337,14 @@ public partial class MainViewModel : ObservableObject
         {
             userInput = await ResolveAppControlInputAsync(operation);
             if (userInput is null && NeedsUserInput(operation.Id))
+            {
+                return;
+            }
+        }
+        else if (operation.Kind == OperationKind.FirmwarePack)
+        {
+            userInput = ResolveFirmwarePackInput(operation);
+            if (userInput is null && operation.Id == "load-pack")
             {
                 return;
             }
@@ -362,6 +379,11 @@ public partial class MainViewModel : ObservableObject
             ProgressValue = 100;
             ProgressText = "100%";
 
+            if (operation.Kind == OperationKind.FirmwarePack)
+            {
+                ApplyPackUi(_runner.LastPackManifest);
+            }
+
             // Listes packages : journaliser ligne par ligne (tronqué)
             if (operation.Id is "list-pkgs" or "list-3rd")
             {
@@ -379,7 +401,7 @@ public partial class MainViewModel : ObservableObject
             }
             else
             {
-                foreach (var line in result.Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).Take(30))
+                foreach (var line in result.Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).Take(40))
                 {
                     _log.Success(line);
                 }
@@ -408,6 +430,85 @@ public partial class MainViewModel : ObservableObject
 
     private static bool NeedsPackagePick(string operationId) =>
         operationId is not ("list-pkgs" or "list-3rd" or "install");
+
+    private void ApplyPackUi(FirmwarePackManifest? manifest)
+    {
+        if (manifest is null)
+        {
+            PackStatusText = "Pack: —";
+            PackPathText = "";
+            return;
+        }
+
+        PackStatusText = $"Pack: {manifest.ShortStatus}";
+        PackPathText = string.IsNullOrWhiteSpace(manifest.PackDir)
+            ? manifest.SourcePath
+            : manifest.PackDir;
+    }
+
+    private string? ResolveFirmwarePackInput(DeviceOperation operation)
+    {
+        var owner = Application.Current?.MainWindow;
+        var brand = SelectedBrand?.Id ?? "unknown";
+        var model = SelectedModel?.ModelCode ?? SelectedModel?.DisplayName ?? "generic";
+
+        switch (operation.Id)
+        {
+            case "load-pack":
+            {
+                var choice = MessageBox.Show(
+                    owner,
+                    "Oui = fichier (ZIP/TAR)\nNon = dossier firmware\nAnnuler = abandon",
+                    "LOAD PACK",
+                    MessageBoxButton.YesNoCancel,
+                    MessageBoxImage.Question);
+
+                if (choice == MessageBoxResult.Cancel) return null;
+
+                if (choice == MessageBoxResult.Yes)
+                {
+                    var dlg = new Microsoft.Win32.OpenFileDialog
+                    {
+                        Title = "Sélectionner un paquet firmware",
+                        Filter =
+                            "Firmware (*.zip;*.tar;*.tar.md5)|*.zip;*.tar;*.tar.md5|Tous les fichiers (*.*)|*.*",
+                        CheckFileExists = true
+                    };
+                    if (dlg.ShowDialog(owner) != true) return null;
+                    var extract = dlg.FileName.EndsWith(".zip", StringComparison.OrdinalIgnoreCase) ? "1" : "0";
+                    return $"{dlg.FileName}|{brand}|{model}|{extract}";
+                }
+
+                var folderDlg = new Microsoft.Win32.OpenFolderDialog
+                {
+                    Title = "Sélectionner un dossier firmware"
+                };
+                if (folderDlg.ShowDialog(owner) != true) return null;
+                return $"{folderDlg.FolderName}|{brand}|{model}|0";
+            }
+
+            case "validate-pack":
+            {
+                if (_runner.LastPackManifest is not null)
+                    return null; // runner utilisera le dernier pack
+
+                var dlg = new Microsoft.Win32.OpenFileDialog
+                {
+                    Title = "Valider un paquet (fichier)",
+                    Filter =
+                        "Firmware (*.zip;*.tar;*.tar.md5)|*.zip;*.tar;*.tar.md5|Tous les fichiers (*.*)|*.*",
+                    CheckFileExists = true
+                };
+                return dlg.ShowDialog(owner) == true ? dlg.FileName : null;
+            }
+
+            case "show-manifest":
+                return null;
+
+            default:
+                return null;
+        }
+    }
 
     private async Task<string?> ResolveAppControlInputAsync(DeviceOperation operation)
     {
@@ -545,9 +646,16 @@ public partial class MainViewModel : ObservableObject
     [RelayCommand]
     private async Task RefreshNowAsync()
     {
+        // Bouton FASTBOOT de la barre utilitaire
         RefreshComPorts();
+        var fb = await _fastboot.DevicesAsync();
+        foreach (var line in fb.Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+        {
+            _log.Info(line);
+        }
+
         await PollDevicesAsync();
-        _log.Info("Refresh done.");
+        _log.Success("Fastboot / refresh terminé.");
     }
 
     [RelayCommand]
@@ -560,15 +668,17 @@ public partial class MainViewModel : ObservableObject
     [RelayCommand]
     private async Task CheckAdbAsync()
     {
-        if (!_adb.IsAvailable)
+        var status = await _adb.StatusAsync();
+        foreach (var line in status.Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
         {
-            _log.Warn("ADB not found.");
-            return;
+            _log.Info(line);
         }
 
-        await _adb.EnsureServerAsync();
         await PollDevicesAsync();
-        _log.Success("ADB check OK.");
+        if (_adb.IsAvailable)
+        {
+            _log.Success("ADB check OK.");
+        }
     }
 
     [RelayCommand]

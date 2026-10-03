@@ -4,7 +4,7 @@ namespace RhosTool.Core.Services;
 
 /// <summary>
 /// Modes et opérations calqués sur UnlockTool (FLASH / META / MTK UNIVERSAL + GENERAL / SPECIAL).
-/// Les opérations licenciées restent PartnerStub ; ADB App Control est opérationnel.
+/// Réel en local : ADB/fastboot, packs, factory reset, guides. PartnerStub = FRP/bypass/NV/flash bas niveau.
 /// </summary>
 public static class BrandCatalog
 {
@@ -78,30 +78,30 @@ public static class BrandCatalog
     private static IReadOnlyList<FunctionTab> SamsungTabs() => new[]
     {
         GeneralTab(
-            Op("backup-nv", "BACKUP NV", "Service partenaire licencié.", OperationKind.PartnerStub),
-            Op("restore-nv", "RESTORE NV", "Service partenaire licencié.", OperationKind.PartnerStub),
-            Op("erase-nv", "ERASE NV", "Service partenaire licencié.", OperationKind.PartnerStub),
-            Op("format-data", "FORMAT DATA", "Service partenaire licencié.", OperationKind.PartnerStub),
-            Op("erase-frp", "ERASE FRP", "Service partenaire licencié.", OperationKind.PartnerStub),
-            Op("fix-orange", "FIX ORANGE MSG", "Service partenaire licencié.", OperationKind.PartnerStub),
-            Op("read-rpmb", "READ RPMB", "Service partenaire licencié.", OperationKind.PartnerStub),
-            Op("write-rpmb", "WRITE RPMB", "Service partenaire licencié.", OperationKind.PartnerStub),
-            Op("unlock-bl", "UNLOCK BL", "Service partenaire licencié.", OperationKind.PartnerStub),
-            Op("relock-bl", "RELOCK BL", "Service partenaire licencié.", OperationKind.PartnerStub),
-            Op("flash", "FLASH", "Service partenaire licencié.", OperationKind.PartnerStub),
-            Op("flash-back", "FLASH BACK", "Service partenaire licencié.", OperationKind.PartnerStub),
-            Op("auth-bypass", "AUTH BYPASS", "Service partenaire licencié.", OperationKind.PartnerStub)),
+            Op("backup-nv", "BACKUP NV", "Module partenaire (FRP/bypass/NV/flash bas niveau) — non exécuté en local.", OperationKind.PartnerStub),
+            Op("restore-nv", "RESTORE NV", "Module partenaire (FRP/bypass/NV/flash bas niveau) — non exécuté en local.", OperationKind.PartnerStub),
+            Op("erase-nv", "ERASE NV", "Module partenaire (FRP/bypass/NV/flash bas niveau) — non exécuté en local.", OperationKind.PartnerStub),
+            Op("format-data", "FORMAT DATA", "Remise d'usine / wipe data via ADB (appareil autorisé).", OperationKind.DeviceAction),
+            Op("erase-frp", "ERASE FRP", "Module partenaire (FRP/bypass/NV/flash bas niveau) — non exécuté en local.", OperationKind.PartnerStub),
+            Op("fix-orange", "FIX ORANGE MSG", "Module partenaire (FRP/bypass/NV/flash bas niveau) — non exécuté en local.", OperationKind.PartnerStub),
+            Op("read-rpmb", "READ RPMB", "Module partenaire (FRP/bypass/NV/flash bas niveau) — non exécuté en local.", OperationKind.PartnerStub),
+            Op("write-rpmb", "WRITE RPMB", "Module partenaire (FRP/bypass/NV/flash bas niveau) — non exécuté en local.", OperationKind.PartnerStub),
+            Op("unlock-bl", "UNLOCK BL", "Module partenaire (FRP/bypass/NV/flash bas niveau) — non exécuté en local.", OperationKind.PartnerStub),
+            Op("relock-bl", "RELOCK BL", "Module partenaire (FRP/bypass/NV/flash bas niveau) — non exécuté en local.", OperationKind.PartnerStub),
+            Op("flash", "FLASH", "Prépare le pack chargé (LOAD PACK). Flash bas niveau = partenaire.", OperationKind.DeviceAction, false),
+            Op("flash-back", "FLASH BACK", "Revalide / rappelle le pack chargé pour flash atelier.", OperationKind.DeviceAction, false),
+            Op("auth-bypass", "AUTH BYPASS", "Module partenaire (FRP/bypass/NV/flash bas niveau) — non exécuté en local.", OperationKind.PartnerStub)),
         SpecialTab(
-            Op("enter-dl", "[COM] ENTER DOWNLOAD", "Guide mode Download / Odin.", OperationKind.PartnerStub, false),
-            Op("enable-adb", "[ODIN] ENABLE ADB", "Vérifie / démarre ADB.", OperationKind.ReadInfo),
-            Op("odin-restore", "[ODIN] RESTORE", "Service partenaire licencié.", OperationKind.PartnerStub),
-            Op("screen-lock", "SCREEN LOCK", "Service partenaire licencié.", OperationKind.PartnerStub),
-            Op("factory", "FACTORY RESET", "Service partenaire licencié.", OperationKind.PartnerStub),
-            Op("skip-pbl", "SKIP PBL", "Service partenaire licencié.", OperationKind.PartnerStub),
-            Op("network", "NETWORK UNLOCK", "Service partenaire licencié.", OperationKind.PartnerStub),
+            Op("enter-dl", "[COM] ENTER DOWNLOAD", "Guide mode Download / Odin / BROM.", OperationKind.DeviceAction, false),
+            Op("enable-adb", "[ODIN] ENABLE ADB", "Démarre le serveur ADB et liste les appareils.", OperationKind.DeviceAction, false),
+            Op("odin-restore", "[ODIN] RESTORE", "Module partenaire (FRP/bypass/NV/flash bas niveau) — non exécuté en local.", OperationKind.PartnerStub),
+            Op("screen-lock", "SCREEN LOCK", "Ouvre les réglages Sécurité (ne retire pas le verrou).", OperationKind.DeviceAction),
+            Op("factory", "FACTORY RESET", "Remise d'usine via ADB (confirmation sur le téléphone).", OperationKind.DeviceAction),
+            Op("skip-pbl", "SKIP PBL", "Module partenaire (FRP/bypass/NV/flash bas niveau) — non exécuté en local.", OperationKind.PartnerStub),
+            Op("network", "NETWORK UNLOCK", "Module partenaire (FRP/bypass/NV/flash bas niveau) — non exécuté en local.", OperationKind.PartnerStub),
             Op("read-info", "READ INFO", "Infos appareil via ADB.", OperationKind.ReadInfo),
             Op("reboot", "REBOOT", "Redémarrage ADB.", OperationKind.Reboot),
-            Op("boot-device", "BOOT DEVICE", "Service partenaire licencié.", OperationKind.PartnerStub),
+            Op("boot-device", "BOOT DEVICE", "Redémarrage ADB de l'appareil.", OperationKind.DeviceAction),
             Op("drivers", "USB DRIVERS", "Gestionnaire de périphériques.", OperationKind.OpenDeviceManager, false)),
         AppControlTab()
     };
@@ -111,31 +111,31 @@ public static class BrandCatalog
     private static IReadOnlyList<FunctionTab> XiaomiTabs() => new[]
     {
         GeneralTab(
-            Op("backup-nv", "BACKUP NV", "Service partenaire licencié.", OperationKind.PartnerStub),
-            Op("restore-nv", "RESTORE NV", "Service partenaire licencié.", OperationKind.PartnerStub),
-            Op("erase-nv", "ERASE NV", "Service partenaire licencié.", OperationKind.PartnerStub),
-            Op("format-data", "FORMAT DATA", "Service partenaire licencié.", OperationKind.PartnerStub),
-            Op("erase-frp", "ERASE FRP", "Service partenaire licencié.", OperationKind.PartnerStub),
-            Op("fix-orange", "FIX ORANGE MSG", "Service partenaire licencié.", OperationKind.PartnerStub),
-            Op("read-rpmb", "READ RPMB", "Service partenaire licencié.", OperationKind.PartnerStub),
-            Op("write-rpmb", "WRITE RPMB", "Service partenaire licencié.", OperationKind.PartnerStub),
-            Op("unlock-bl", "UNLOCK BL", "Service partenaire licencié.", OperationKind.PartnerStub),
-            Op("relock-bl", "RELOCK BL", "Service partenaire licencié.", OperationKind.PartnerStub),
-            Op("flash", "FLASH", "Service partenaire licencié.", OperationKind.PartnerStub),
-            Op("flash-back", "FLASH BACK", "Service partenaire licencié.", OperationKind.PartnerStub),
-            Op("auth-bypass", "AUTH BYPASS", "Service partenaire licencié.", OperationKind.PartnerStub)),
+            Op("backup-nv", "BACKUP NV", "Module partenaire (FRP/bypass/NV/flash bas niveau) — non exécuté en local.", OperationKind.PartnerStub),
+            Op("restore-nv", "RESTORE NV", "Module partenaire (FRP/bypass/NV/flash bas niveau) — non exécuté en local.", OperationKind.PartnerStub),
+            Op("erase-nv", "ERASE NV", "Module partenaire (FRP/bypass/NV/flash bas niveau) — non exécuté en local.", OperationKind.PartnerStub),
+            Op("format-data", "FORMAT DATA", "Remise d'usine / wipe data via ADB (appareil autorisé).", OperationKind.DeviceAction),
+            Op("erase-frp", "ERASE FRP", "Module partenaire (FRP/bypass/NV/flash bas niveau) — non exécuté en local.", OperationKind.PartnerStub),
+            Op("fix-orange", "FIX ORANGE MSG", "Module partenaire (FRP/bypass/NV/flash bas niveau) — non exécuté en local.", OperationKind.PartnerStub),
+            Op("read-rpmb", "READ RPMB", "Module partenaire (FRP/bypass/NV/flash bas niveau) — non exécuté en local.", OperationKind.PartnerStub),
+            Op("write-rpmb", "WRITE RPMB", "Module partenaire (FRP/bypass/NV/flash bas niveau) — non exécuté en local.", OperationKind.PartnerStub),
+            Op("unlock-bl", "UNLOCK BL", "Module partenaire (FRP/bypass/NV/flash bas niveau) — non exécuté en local.", OperationKind.PartnerStub),
+            Op("relock-bl", "RELOCK BL", "Module partenaire (FRP/bypass/NV/flash bas niveau) — non exécuté en local.", OperationKind.PartnerStub),
+            Op("flash", "FLASH", "Prépare le pack chargé (LOAD PACK). Flash bas niveau = partenaire.", OperationKind.DeviceAction, false),
+            Op("flash-back", "FLASH BACK", "Revalide / rappelle le pack chargé pour flash atelier.", OperationKind.DeviceAction, false),
+            Op("auth-bypass", "AUTH BYPASS", "Module partenaire (FRP/bypass/NV/flash bas niveau) — non exécuté en local.", OperationKind.PartnerStub)),
         SpecialTab(
-            Op("mi-account", "MI ACCOUNT", "Service partenaire licencié.", OperationKind.PartnerStub),
-            Op("micloud", "MI CLOUD", "Service partenaire licencié.", OperationKind.PartnerStub),
-            Op("edl", "ENTER EDL", "Service partenaire licencié.", OperationKind.PartnerStub),
-            Op("auth-flash", "AUTH FLASH", "Service partenaire licencié.", OperationKind.PartnerStub),
-            Op("factory", "FACTORY RESET", "Service partenaire licencié.", OperationKind.PartnerStub),
-            Op("screen-lock", "SCREEN LOCK", "Service partenaire licencié.", OperationKind.PartnerStub),
-            Op("network", "NETWORK UNLOCK", "Service partenaire licencié.", OperationKind.PartnerStub),
+            Op("mi-account", "MI ACCOUNT", "Module partenaire (FRP/bypass/NV/flash bas niveau) — non exécuté en local.", OperationKind.PartnerStub),
+            Op("micloud", "MI CLOUD", "Module partenaire (FRP/bypass/NV/flash bas niveau) — non exécuté en local.", OperationKind.PartnerStub),
+            Op("edl", "ENTER EDL", "Guide connexion EDL / test-point (pas de flash forcé).", OperationKind.DeviceAction, false),
+            Op("auth-flash", "AUTH FLASH", "Module partenaire (FRP/bypass/NV/flash bas niveau) — non exécuté en local.", OperationKind.PartnerStub),
+            Op("factory", "FACTORY RESET", "Remise d'usine via ADB (confirmation sur le téléphone).", OperationKind.DeviceAction),
+            Op("screen-lock", "SCREEN LOCK", "Ouvre les réglages Sécurité (ne retire pas le verrou).", OperationKind.DeviceAction),
+            Op("network", "NETWORK UNLOCK", "Module partenaire (FRP/bypass/NV/flash bas niveau) — non exécuté en local.", OperationKind.PartnerStub),
             Op("read-info", "READ INFO", "Infos ADB.", OperationKind.ReadInfo),
             Op("reboot", "REBOOT", "Redémarrage ADB.", OperationKind.Reboot),
-            Op("reboot-fb", "REBOOT BOOTLOADER", "Service partenaire licencié.", OperationKind.PartnerStub),
-            Op("boot-device", "BOOT DEVICE", "Service partenaire licencié.", OperationKind.PartnerStub),
+            Op("reboot-fb", "REBOOT BOOTLOADER", "Redémarrage en mode bootloader / fastboot.", OperationKind.DeviceAction),
+            Op("boot-device", "BOOT DEVICE", "Redémarrage ADB de l'appareil.", OperationKind.DeviceAction),
             Op("drivers", "USB DRIVERS", "Gestionnaire de périphériques.", OperationKind.OpenDeviceManager, false)),
         AppControlTab()
     };
@@ -145,30 +145,30 @@ public static class BrandCatalog
     private static IReadOnlyList<FunctionTab> MtkBrandTabs(string brand) => new[]
     {
         GeneralTab(
-            Op("backup-nv", "BACKUP NV", "Service partenaire licencié.", OperationKind.PartnerStub),
-            Op("restore-nv", "RESTORE NV", "Service partenaire licencié.", OperationKind.PartnerStub),
-            Op("erase-nv", "ERASE NV", "Service partenaire licencié.", OperationKind.PartnerStub),
-            Op("format-data", "FORMAT DATA", "Service partenaire licencié.", OperationKind.PartnerStub),
-            Op("erase-frp", "ERASE FRP", "Service partenaire licencié.", OperationKind.PartnerStub),
-            Op("fix-orange", "FIX ORANGE MSG", "Service partenaire licencié.", OperationKind.PartnerStub),
-            Op("read-rpmb", "READ RPMB", "Service partenaire licencié.", OperationKind.PartnerStub),
-            Op("write-rpmb", "WRITE RPMB", "Service partenaire licencié.", OperationKind.PartnerStub),
-            Op("unlock-bl", "UNLOCK BL", "Service partenaire licencié.", OperationKind.PartnerStub),
-            Op("relock-bl", "RELOCK BL", "Service partenaire licencié.", OperationKind.PartnerStub),
-            Op("flash", "FLASH", "Service partenaire licencié.", OperationKind.PartnerStub),
-            Op("flash-back", "FLASH BACK", "Service partenaire licencié.", OperationKind.PartnerStub),
-            Op("auth-bypass", "AUTH BYPASS", "Service partenaire licencié.", OperationKind.PartnerStub)),
+            Op("backup-nv", "BACKUP NV", "Module partenaire (FRP/bypass/NV/flash bas niveau) — non exécuté en local.", OperationKind.PartnerStub),
+            Op("restore-nv", "RESTORE NV", "Module partenaire (FRP/bypass/NV/flash bas niveau) — non exécuté en local.", OperationKind.PartnerStub),
+            Op("erase-nv", "ERASE NV", "Module partenaire (FRP/bypass/NV/flash bas niveau) — non exécuté en local.", OperationKind.PartnerStub),
+            Op("format-data", "FORMAT DATA", "Remise d'usine / wipe data via ADB (appareil autorisé).", OperationKind.DeviceAction),
+            Op("erase-frp", "ERASE FRP", "Module partenaire (FRP/bypass/NV/flash bas niveau) — non exécuté en local.", OperationKind.PartnerStub),
+            Op("fix-orange", "FIX ORANGE MSG", "Module partenaire (FRP/bypass/NV/flash bas niveau) — non exécuté en local.", OperationKind.PartnerStub),
+            Op("read-rpmb", "READ RPMB", "Module partenaire (FRP/bypass/NV/flash bas niveau) — non exécuté en local.", OperationKind.PartnerStub),
+            Op("write-rpmb", "WRITE RPMB", "Module partenaire (FRP/bypass/NV/flash bas niveau) — non exécuté en local.", OperationKind.PartnerStub),
+            Op("unlock-bl", "UNLOCK BL", "Module partenaire (FRP/bypass/NV/flash bas niveau) — non exécuté en local.", OperationKind.PartnerStub),
+            Op("relock-bl", "RELOCK BL", "Module partenaire (FRP/bypass/NV/flash bas niveau) — non exécuté en local.", OperationKind.PartnerStub),
+            Op("flash", "FLASH", "Prépare le pack chargé (LOAD PACK). Flash bas niveau = partenaire.", OperationKind.DeviceAction, false),
+            Op("flash-back", "FLASH BACK", "Revalide / rappelle le pack chargé pour flash atelier.", OperationKind.DeviceAction, false),
+            Op("auth-bypass", "AUTH BYPASS", "Module partenaire (FRP/bypass/NV/flash bas niveau) — non exécuté en local.", OperationKind.PartnerStub)),
         SpecialTab(
-            Op("mtk-meta", "MTK META", $"Mode META {brand} — service partenaire.", OperationKind.PartnerStub),
-            Op("mtk-preloader", "MTK PRELOADER", "Service partenaire licencié.", OperationKind.PartnerStub),
-            Op("custom-da", "CUSTOM DA", "Service partenaire licencié.", OperationKind.PartnerStub),
-            Op("force-brom", "FORCE BROM", "Service partenaire licencié.", OperationKind.PartnerStub),
-            Op("wipe-efs", "WIPE EFS", "Service partenaire licencié.", OperationKind.PartnerStub),
-            Op("factory", "FACTORY RESET", "Service partenaire licencié.", OperationKind.PartnerStub),
-            Op("screen-lock", "SCREEN LOCK", "Service partenaire licencié.", OperationKind.PartnerStub),
+            Op("mtk-meta", "MTK META", $"Guide mode META {brand}.", OperationKind.DeviceAction, false),
+            Op("mtk-preloader", "MTK PRELOADER", "Guide mode preloader MTK.", OperationKind.DeviceAction, false),
+            Op("custom-da", "CUSTOM DA", "Module partenaire (FRP/bypass/NV/flash bas niveau) — non exécuté en local.", OperationKind.PartnerStub),
+            Op("force-brom", "FORCE BROM", "Guide entrée BROM / preloader.", OperationKind.DeviceAction, false),
+            Op("wipe-efs", "WIPE EFS", "Module partenaire (FRP/bypass/NV/flash bas niveau) — non exécuté en local.", OperationKind.PartnerStub),
+            Op("factory", "FACTORY RESET", "Remise d'usine via ADB (confirmation sur le téléphone).", OperationKind.DeviceAction),
+            Op("screen-lock", "SCREEN LOCK", "Ouvre les réglages Sécurité (ne retire pas le verrou).", OperationKind.DeviceAction),
             Op("read-info", "READ INFO", $"Infos {brand} via ADB.", OperationKind.ReadInfo),
             Op("reboot", "REBOOT", "Redémarrage ADB.", OperationKind.Reboot),
-            Op("boot-device", "BOOT DEVICE", "Service partenaire licencié.", OperationKind.PartnerStub),
+            Op("boot-device", "BOOT DEVICE", "Redémarrage ADB de l'appareil.", OperationKind.DeviceAction),
             Op("drivers", "USB DRIVERS", "Gestionnaire de périphériques.", OperationKind.OpenDeviceManager, false)),
         AppControlTab()
     };
@@ -176,28 +176,28 @@ public static class BrandCatalog
     private static IReadOnlyList<FunctionTab> OppoFamilyTabs(string brand) => new[]
     {
         GeneralTab(
-            Op("backup-nv", "BACKUP NV", "Service partenaire licencié.", OperationKind.PartnerStub),
-            Op("restore-nv", "RESTORE NV", "Service partenaire licencié.", OperationKind.PartnerStub),
-            Op("erase-nv", "ERASE NV", "Service partenaire licencié.", OperationKind.PartnerStub),
-            Op("format-data", "FORMAT DATA", "Service partenaire licencié.", OperationKind.PartnerStub),
-            Op("erase-frp", "ERASE FRP", "Service partenaire licencié.", OperationKind.PartnerStub),
-            Op("fix-orange", "FIX ORANGE MSG", "Service partenaire licencié.", OperationKind.PartnerStub),
-            Op("read-rpmb", "READ RPMB", "Service partenaire licencié.", OperationKind.PartnerStub),
-            Op("write-rpmb", "WRITE RPMB", "Service partenaire licencié.", OperationKind.PartnerStub),
-            Op("unlock-bl", "UNLOCK BL", "Service partenaire licencié.", OperationKind.PartnerStub),
-            Op("relock-bl", "RELOCK BL", "Service partenaire licencié.", OperationKind.PartnerStub),
-            Op("flash", "FLASH", "Service partenaire licencié.", OperationKind.PartnerStub),
-            Op("flash-back", "FLASH BACK", "Service partenaire licencié.", OperationKind.PartnerStub),
-            Op("auth-bypass", "AUTH BYPASS", "Service partenaire licencié.", OperationKind.PartnerStub)),
+            Op("backup-nv", "BACKUP NV", "Module partenaire (FRP/bypass/NV/flash bas niveau) — non exécuté en local.", OperationKind.PartnerStub),
+            Op("restore-nv", "RESTORE NV", "Module partenaire (FRP/bypass/NV/flash bas niveau) — non exécuté en local.", OperationKind.PartnerStub),
+            Op("erase-nv", "ERASE NV", "Module partenaire (FRP/bypass/NV/flash bas niveau) — non exécuté en local.", OperationKind.PartnerStub),
+            Op("format-data", "FORMAT DATA", "Remise d'usine / wipe data via ADB (appareil autorisé).", OperationKind.DeviceAction),
+            Op("erase-frp", "ERASE FRP", "Module partenaire (FRP/bypass/NV/flash bas niveau) — non exécuté en local.", OperationKind.PartnerStub),
+            Op("fix-orange", "FIX ORANGE MSG", "Module partenaire (FRP/bypass/NV/flash bas niveau) — non exécuté en local.", OperationKind.PartnerStub),
+            Op("read-rpmb", "READ RPMB", "Module partenaire (FRP/bypass/NV/flash bas niveau) — non exécuté en local.", OperationKind.PartnerStub),
+            Op("write-rpmb", "WRITE RPMB", "Module partenaire (FRP/bypass/NV/flash bas niveau) — non exécuté en local.", OperationKind.PartnerStub),
+            Op("unlock-bl", "UNLOCK BL", "Module partenaire (FRP/bypass/NV/flash bas niveau) — non exécuté en local.", OperationKind.PartnerStub),
+            Op("relock-bl", "RELOCK BL", "Module partenaire (FRP/bypass/NV/flash bas niveau) — non exécuté en local.", OperationKind.PartnerStub),
+            Op("flash", "FLASH", "Prépare le pack chargé (LOAD PACK). Flash bas niveau = partenaire.", OperationKind.DeviceAction, false),
+            Op("flash-back", "FLASH BACK", "Revalide / rappelle le pack chargé pour flash atelier.", OperationKind.DeviceAction, false),
+            Op("auth-bypass", "AUTH BYPASS", "Module partenaire (FRP/bypass/NV/flash bas niveau) — non exécuté en local.", OperationKind.PartnerStub)),
         SpecialTab(
-            Op("oppo-id", $"{brand.ToUpperInvariant()} ID", "Service partenaire licencié.", OperationKind.PartnerStub),
-            Op("demo", "DEMO REMOVE", "Service partenaire licencié.", OperationKind.PartnerStub),
-            Op("factory", "FACTORY RESET", "Service partenaire licencié.", OperationKind.PartnerStub),
-            Op("screen-lock", "SCREEN LOCK", "Service partenaire licencié.", OperationKind.PartnerStub),
-            Op("network", "NETWORK UNLOCK", "Service partenaire licencié.", OperationKind.PartnerStub),
+            Op("oppo-id", $"{brand.ToUpperInvariant()} ID", "Module partenaire (FRP/bypass/NV/flash bas niveau) — non exécuté en local.", OperationKind.PartnerStub),
+            Op("demo", "DEMO REMOVE", "Module partenaire (FRP/bypass/NV/flash bas niveau) — non exécuté en local.", OperationKind.PartnerStub),
+            Op("factory", "FACTORY RESET", "Remise d'usine via ADB (confirmation sur le téléphone).", OperationKind.DeviceAction),
+            Op("screen-lock", "SCREEN LOCK", "Ouvre les réglages Sécurité (ne retire pas le verrou).", OperationKind.DeviceAction),
+            Op("network", "NETWORK UNLOCK", "Module partenaire (FRP/bypass/NV/flash bas niveau) — non exécuté en local.", OperationKind.PartnerStub),
             Op("read-info", "READ INFO", $"Infos {brand} via ADB.", OperationKind.ReadInfo),
             Op("reboot", "REBOOT", "Redémarrage ADB.", OperationKind.Reboot),
-            Op("boot-device", "BOOT DEVICE", "Service partenaire licencié.", OperationKind.PartnerStub),
+            Op("boot-device", "BOOT DEVICE", "Redémarrage ADB de l'appareil.", OperationKind.DeviceAction),
             Op("drivers", "USB DRIVERS", "Gestionnaire de périphériques.", OperationKind.OpenDeviceManager, false)),
         AppControlTab()
     };
@@ -205,28 +205,28 @@ public static class BrandCatalog
     private static IReadOnlyList<FunctionTab> GenericAndroidTabs(string brand) => new[]
     {
         GeneralTab(
-            Op("backup-nv", "BACKUP NV", "Service partenaire licencié.", OperationKind.PartnerStub),
-            Op("restore-nv", "RESTORE NV", "Service partenaire licencié.", OperationKind.PartnerStub),
-            Op("erase-nv", "ERASE NV", "Service partenaire licencié.", OperationKind.PartnerStub),
-            Op("format-data", "FORMAT DATA", "Service partenaire licencié.", OperationKind.PartnerStub),
-            Op("erase-frp", "ERASE FRP", "Service partenaire licencié.", OperationKind.PartnerStub),
-            Op("fix-orange", "FIX ORANGE MSG", "Service partenaire licencié.", OperationKind.PartnerStub),
-            Op("read-rpmb", "READ RPMB", "Service partenaire licencié.", OperationKind.PartnerStub),
-            Op("write-rpmb", "WRITE RPMB", "Service partenaire licencié.", OperationKind.PartnerStub),
-            Op("unlock-bl", "UNLOCK BL", "Service partenaire licencié.", OperationKind.PartnerStub),
-            Op("relock-bl", "RELOCK BL", "Service partenaire licencié.", OperationKind.PartnerStub),
-            Op("flash", "FLASH", "Service partenaire licencié.", OperationKind.PartnerStub),
-            Op("flash-back", "FLASH BACK", "Service partenaire licencié.", OperationKind.PartnerStub),
-            Op("auth-bypass", "AUTH BYPASS", "Service partenaire licencié.", OperationKind.PartnerStub)),
+            Op("backup-nv", "BACKUP NV", "Module partenaire (FRP/bypass/NV/flash bas niveau) — non exécuté en local.", OperationKind.PartnerStub),
+            Op("restore-nv", "RESTORE NV", "Module partenaire (FRP/bypass/NV/flash bas niveau) — non exécuté en local.", OperationKind.PartnerStub),
+            Op("erase-nv", "ERASE NV", "Module partenaire (FRP/bypass/NV/flash bas niveau) — non exécuté en local.", OperationKind.PartnerStub),
+            Op("format-data", "FORMAT DATA", "Remise d'usine / wipe data via ADB (appareil autorisé).", OperationKind.DeviceAction),
+            Op("erase-frp", "ERASE FRP", "Module partenaire (FRP/bypass/NV/flash bas niveau) — non exécuté en local.", OperationKind.PartnerStub),
+            Op("fix-orange", "FIX ORANGE MSG", "Module partenaire (FRP/bypass/NV/flash bas niveau) — non exécuté en local.", OperationKind.PartnerStub),
+            Op("read-rpmb", "READ RPMB", "Module partenaire (FRP/bypass/NV/flash bas niveau) — non exécuté en local.", OperationKind.PartnerStub),
+            Op("write-rpmb", "WRITE RPMB", "Module partenaire (FRP/bypass/NV/flash bas niveau) — non exécuté en local.", OperationKind.PartnerStub),
+            Op("unlock-bl", "UNLOCK BL", "Module partenaire (FRP/bypass/NV/flash bas niveau) — non exécuté en local.", OperationKind.PartnerStub),
+            Op("relock-bl", "RELOCK BL", "Module partenaire (FRP/bypass/NV/flash bas niveau) — non exécuté en local.", OperationKind.PartnerStub),
+            Op("flash", "FLASH", "Prépare le pack chargé (LOAD PACK). Flash bas niveau = partenaire.", OperationKind.DeviceAction, false),
+            Op("flash-back", "FLASH BACK", "Revalide / rappelle le pack chargé pour flash atelier.", OperationKind.DeviceAction, false),
+            Op("auth-bypass", "AUTH BYPASS", "Module partenaire (FRP/bypass/NV/flash bas niveau) — non exécuté en local.", OperationKind.PartnerStub)),
         SpecialTab(
-            Op("factory", "FACTORY RESET", "Service partenaire licencié.", OperationKind.PartnerStub),
-            Op("screen-lock", "SCREEN LOCK", "Service partenaire licencié.", OperationKind.PartnerStub),
-            Op("network", "NETWORK UNLOCK", "Service partenaire licencié.", OperationKind.PartnerStub),
-            Op("edl-brom", "EDL / BROM", "Service partenaire licencié.", OperationKind.PartnerStub),
+            Op("factory", "FACTORY RESET", "Remise d'usine via ADB (confirmation sur le téléphone).", OperationKind.DeviceAction),
+            Op("screen-lock", "SCREEN LOCK", "Ouvre les réglages Sécurité (ne retire pas le verrou).", OperationKind.DeviceAction),
+            Op("network", "NETWORK UNLOCK", "Module partenaire (FRP/bypass/NV/flash bas niveau) — non exécuté en local.", OperationKind.PartnerStub),
+            Op("edl-brom", "EDL / BROM", "Guide EDL / BROM / preloader.", OperationKind.DeviceAction, false),
             Op("read-info", "READ INFO", $"Infos {brand} via ADB.", OperationKind.ReadInfo),
             Op("reboot", "REBOOT", "Redémarrage ADB.", OperationKind.Reboot),
             Op("reboot-rec", "REBOOT RECOVERY", "Recovery ADB.", OperationKind.RebootRecovery),
-            Op("boot-device", "BOOT DEVICE", "Service partenaire licencié.", OperationKind.PartnerStub),
+            Op("boot-device", "BOOT DEVICE", "Redémarrage ADB de l'appareil.", OperationKind.DeviceAction),
             Op("drivers", "USB DRIVERS", "Gestionnaire de périphériques.", OperationKind.OpenDeviceManager, false)),
         AppControlTab()
     };
@@ -234,12 +234,12 @@ public static class BrandCatalog
     private static IReadOnlyList<FunctionTab> QualcommTabs() => new[]
     {
         GeneralTab(
-            Op("edl", "QUALCOMM EDL", "Service partenaire licencié.", OperationKind.PartnerStub),
-            Op("firehose", "FIREHOSE", "Service partenaire licencié.", OperationKind.PartnerStub),
-            Op("format-data", "FORMAT DATA", "Service partenaire licencié.", OperationKind.PartnerStub),
-            Op("erase-frp", "ERASE FRP", "Service partenaire licencié.", OperationKind.PartnerStub),
-            Op("flash", "FLASH", "Service partenaire licencié.", OperationKind.PartnerStub),
-            Op("auth-bypass", "AUTH BYPASS", "Service partenaire licencié.", OperationKind.PartnerStub)),
+            Op("edl", "QUALCOMM EDL", "Guide connexion EDL Qualcomm.", OperationKind.DeviceAction, false),
+            Op("firehose", "FIREHOSE", "Module partenaire (FRP/bypass/NV/flash bas niveau) — non exécuté en local.", OperationKind.PartnerStub),
+            Op("format-data", "FORMAT DATA", "Remise d'usine / wipe data via ADB (appareil autorisé).", OperationKind.DeviceAction),
+            Op("erase-frp", "ERASE FRP", "Module partenaire (FRP/bypass/NV/flash bas niveau) — non exécuté en local.", OperationKind.PartnerStub),
+            Op("flash", "FLASH", "Prépare le pack chargé (LOAD PACK). Flash bas niveau = partenaire.", OperationKind.DeviceAction, false),
+            Op("auth-bypass", "AUTH BYPASS", "Module partenaire (FRP/bypass/NV/flash bas niveau) — non exécuté en local.", OperationKind.PartnerStub)),
         SpecialTab(
             Op("read-info", "READ INFO", "Infos ADB.", OperationKind.ReadInfo),
             Op("reboot", "REBOOT", "Redémarrage ADB.", OperationKind.Reboot),
@@ -250,50 +250,57 @@ public static class BrandCatalog
     private static IReadOnlyList<FunctionTab> MtkPlatformTabs() => new[]
     {
         GeneralTab(
-            Op("backup-nv", "BACKUP NV", "Service partenaire licencié.", OperationKind.PartnerStub),
-            Op("restore-nv", "RESTORE NV", "Service partenaire licencié.", OperationKind.PartnerStub),
-            Op("erase-nv", "ERASE NV", "Service partenaire licencié.", OperationKind.PartnerStub),
-            Op("format-data", "FORMAT DATA", "Service partenaire licencié.", OperationKind.PartnerStub),
-            Op("erase-frp", "ERASE FRP", "Service partenaire licencié.", OperationKind.PartnerStub),
-            Op("fix-orange", "FIX ORANGE MSG", "Service partenaire licencié.", OperationKind.PartnerStub),
-            Op("read-rpmb", "READ RPMB", "Service partenaire licencié.", OperationKind.PartnerStub),
-            Op("write-rpmb", "WRITE RPMB", "Service partenaire licencié.", OperationKind.PartnerStub),
-            Op("unlock-bl", "UNLOCK BL", "Service partenaire licencié.", OperationKind.PartnerStub),
-            Op("relock-bl", "RELOCK BL", "Service partenaire licencié.", OperationKind.PartnerStub),
-            Op("flash", "FLASH", "Service partenaire licencié.", OperationKind.PartnerStub),
-            Op("flash-back", "FLASH BACK", "Service partenaire licencié.", OperationKind.PartnerStub),
-            Op("auth-bypass", "AUTH BYPASS", "Service partenaire licencié.", OperationKind.PartnerStub)),
+            Op("backup-nv", "BACKUP NV", "Module partenaire (FRP/bypass/NV/flash bas niveau) — non exécuté en local.", OperationKind.PartnerStub),
+            Op("restore-nv", "RESTORE NV", "Module partenaire (FRP/bypass/NV/flash bas niveau) — non exécuté en local.", OperationKind.PartnerStub),
+            Op("erase-nv", "ERASE NV", "Module partenaire (FRP/bypass/NV/flash bas niveau) — non exécuté en local.", OperationKind.PartnerStub),
+            Op("format-data", "FORMAT DATA", "Remise d'usine / wipe data via ADB (appareil autorisé).", OperationKind.DeviceAction),
+            Op("erase-frp", "ERASE FRP", "Module partenaire (FRP/bypass/NV/flash bas niveau) — non exécuté en local.", OperationKind.PartnerStub),
+            Op("fix-orange", "FIX ORANGE MSG", "Module partenaire (FRP/bypass/NV/flash bas niveau) — non exécuté en local.", OperationKind.PartnerStub),
+            Op("read-rpmb", "READ RPMB", "Module partenaire (FRP/bypass/NV/flash bas niveau) — non exécuté en local.", OperationKind.PartnerStub),
+            Op("write-rpmb", "WRITE RPMB", "Module partenaire (FRP/bypass/NV/flash bas niveau) — non exécuté en local.", OperationKind.PartnerStub),
+            Op("unlock-bl", "UNLOCK BL", "Module partenaire (FRP/bypass/NV/flash bas niveau) — non exécuté en local.", OperationKind.PartnerStub),
+            Op("relock-bl", "RELOCK BL", "Module partenaire (FRP/bypass/NV/flash bas niveau) — non exécuté en local.", OperationKind.PartnerStub),
+            Op("flash", "FLASH", "Prépare le pack chargé (LOAD PACK). Flash bas niveau = partenaire.", OperationKind.DeviceAction, false),
+            Op("flash-back", "FLASH BACK", "Revalide / rappelle le pack chargé pour flash atelier.", OperationKind.DeviceAction, false),
+            Op("auth-bypass", "AUTH BYPASS", "Module partenaire (FRP/bypass/NV/flash bas niveau) — non exécuté en local.", OperationKind.PartnerStub)),
         SpecialTab(
-            Op("brom", "MTK BROM", "Service partenaire licencié.", OperationKind.PartnerStub),
-            Op("meta", "MTK META", "Service partenaire licencié.", OperationKind.PartnerStub),
-            Op("custom-da", "CUSTOM DA", "Service partenaire licencié.", OperationKind.PartnerStub),
-            Op("force-brom", "FORCE BROM", "Service partenaire licencié.", OperationKind.PartnerStub),
+            Op("brom", "MTK BROM", "Module partenaire (FRP/bypass/NV/flash bas niveau) — non exécuté en local.", OperationKind.PartnerStub),
+            Op("meta", "MTK META", "Module partenaire (FRP/bypass/NV/flash bas niveau) — non exécuté en local.", OperationKind.PartnerStub),
+            Op("custom-da", "CUSTOM DA", "Module partenaire (FRP/bypass/NV/flash bas niveau) — non exécuté en local.", OperationKind.PartnerStub),
+            Op("force-brom", "FORCE BROM", "Guide entrée BROM / preloader.", OperationKind.DeviceAction, false),
             Op("read-info", "READ INFO", "Infos ADB.", OperationKind.ReadInfo),
             Op("reboot", "REBOOT", "Redémarrage ADB.", OperationKind.Reboot),
-            Op("boot-device", "BOOT DEVICE", "Service partenaire licencié.", OperationKind.PartnerStub),
+            Op("boot-device", "BOOT DEVICE", "Redémarrage ADB de l'appareil.", OperationKind.DeviceAction),
             Op("drivers", "USB DRIVERS", "Gestionnaire de périphériques.", OperationKind.OpenDeviceManager, false)),
         AppControlTab()
     };
 
     private static IReadOnlyList<FunctionTab> AppleTabs() => new[]
     {
-        Tab("general", "GENERAL",
+        GeneralTab(
             Op("backup-pass", "BACKUP PASSCODE", "Service partenaire licencié (ramdisk).", OperationKind.PartnerStub),
             Op("restore-pass", "RESTORE PASSCODE", "Service partenaire licencié (ramdisk).", OperationKind.PartnerStub),
-            Op("read-account", "READ ACCOUNT", "Service partenaire licencié.", OperationKind.PartnerStub),
-            Op("read-hw", "READ HW INFO", "Service partenaire licencié.", OperationKind.PartnerStub),
+            Op("read-account", "READ ACCOUNT", "Module partenaire (FRP/bypass/NV/flash bas niveau) — non exécuté en local.", OperationKind.PartnerStub),
+            Op("read-hw", "READ HW INFO", "Module partenaire (FRP/bypass/NV/flash bas niveau) — non exécuté en local.", OperationKind.PartnerStub),
             Op("read-ios", "READ iOS", "Infos iOS si ideviceinfo.", OperationKind.ReadInfo),
-            Op("factory", "FACTORY RESET", "Service partenaire licencié.", OperationKind.PartnerStub),
-            Op("hidden-account", "HIDDEN ACCOUNT", "Service partenaire licencié.", OperationKind.PartnerStub)),
+            Op("factory", "FACTORY RESET", "Remise d'usine via ADB (confirmation sur le téléphone).", OperationKind.DeviceAction),
+            Op("hidden-account", "HIDDEN ACCOUNT", "Module partenaire (FRP/bypass/NV/flash bas niveau) — non exécuté en local.", OperationKind.PartnerStub)),
         Tab("special", "SPECIAL",
-            Op("icloud", "ICLOUD / ACTIVATION", "Service partenaire licencié.", OperationKind.PartnerStub),
-            Op("mdm", "MDM", "Service partenaire licencié.", OperationKind.PartnerStub),
-            Op("network", "NETWORK UNLOCK", "Service partenaire licencié.", OperationKind.PartnerStub),
+            Op("icloud", "ICLOUD / ACTIVATION", "Module partenaire (FRP/bypass/NV/flash bas niveau) — non exécuté en local.", OperationKind.PartnerStub),
+            Op("mdm", "MDM", "Module partenaire (FRP/bypass/NV/flash bas niveau) — non exécuté en local.", OperationKind.PartnerStub),
+            Op("network", "NETWORK UNLOCK", "Module partenaire (FRP/bypass/NV/flash bas niveau) — non exécuté en local.", OperationKind.PartnerStub),
             Op("drivers", "USB DRIVERS", "Gestionnaire de périphériques.", OperationKind.OpenDeviceManager, false))
     };
 
+    private static DeviceOperation[] PackOps() => new[]
+    {
+        Op("load-pack", "LOAD PACK", "Importer un paquet firmware (ZIP/TAR/dossier) et générer le manifeste.", OperationKind.FirmwarePack, false),
+        Op("validate-pack", "VALIDATE PACK", "Valider le dernier paquet chargé (ou un chemin).", OperationKind.FirmwarePack, false),
+        Op("show-manifest", "SHOW MANIFEST", "Afficher le manifeste du paquet firmware chargé.", OperationKind.FirmwarePack, false)
+    };
+
     private static FunctionTab GeneralTab(params DeviceOperation[] ops) =>
-        Tab("general", "GENERAL", ops);
+        Tab("general", "GENERAL", PackOps().Concat(ops).ToArray());
 
     private static FunctionTab SpecialTab(params DeviceOperation[] ops) =>
         Tab("special", "SPECIAL", ops);

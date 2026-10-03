@@ -92,6 +92,126 @@ public sealed class AdbService
         _log.Success("Commande reboot envoyée.");
     }
 
+    public async Task<string> StatusAsync(CancellationToken ct = default)
+    {
+        if (!IsAvailable)
+        {
+            return "ADB introuvable. Lancez installer/setup-platform-tools.ps1 ou placez platform-tools dans le dossier de l'app.";
+        }
+
+        await EnsureServerAsync(ct).ConfigureAwait(false);
+        var devices = await GetDevicesAsync(ct).ConfigureAwait(false);
+        var sb = new StringBuilder();
+        sb.AppendLine($"ADB: {AdbPath}");
+        sb.AppendLine($"Appareils: {devices.Count}");
+        foreach (var d in devices)
+        {
+            sb.AppendLine($"  - {d.Serial} [{d.State}] {d.Manufacturer} {d.Model}".Trim());
+        }
+
+        if (devices.Count == 0)
+        {
+            sb.AppendLine("Aucun appareil. Activez le débogage USB et acceptez l'empreinte RSA.");
+        }
+
+        return sb.ToString().TrimEnd();
+    }
+
+    public async Task<string> GetDetailedInfoAsync(string serial, CancellationToken ct = default)
+    {
+        var props = new (string Key, string Prop)[]
+        {
+            ("Fabricant", "ro.product.manufacturer"),
+            ("Modèle", "ro.product.model"),
+            ("Produit", "ro.product.name"),
+            ("Appareil", "ro.product.device"),
+            ("Android", "ro.build.version.release"),
+            ("SDK", "ro.build.version.sdk"),
+            ("Build", "ro.build.display.id"),
+            ("Fingerprint", "ro.build.fingerprint"),
+            ("CPU ABI", "ro.product.cpu.abi"),
+            ("Hardware", "ro.hardware"),
+            ("Board", "ro.product.board"),
+            ("Série", "ro.serialno"),
+            ("OEM unlock allowed", "sys.oem_unlock_allowed"),
+            ("Bootloader", "ro.bootloader"),
+            ("Baseband", "gsm.version.baseband")
+        };
+
+        var sb = new StringBuilder();
+        sb.AppendLine($"Série ADB: {serial}");
+        foreach (var (key, prop) in props)
+        {
+            var value = await GetPropAsync(serial, prop, ct).ConfigureAwait(false);
+            if (!string.IsNullOrWhiteSpace(value))
+            {
+                sb.AppendLine($"{key}: {value}");
+            }
+        }
+
+        // Storage / battery (best effort)
+        var df = (await ShellAsync(serial, "df /data 2>/dev/null | tail -n 1", ct).ConfigureAwait(false)).Trim();
+        if (!string.IsNullOrWhiteSpace(df))
+        {
+            sb.AppendLine($"Data FS: {df}");
+        }
+
+        var battRaw = await ShellAsync(serial, "dumpsys battery", ct).ConfigureAwait(false);
+        var battLines = battRaw
+            .Split('\n')
+            .Select(l => l.Trim())
+            .Where(l =>
+                l.StartsWith("level", StringComparison.OrdinalIgnoreCase) ||
+                l.StartsWith("status", StringComparison.OrdinalIgnoreCase) ||
+                l.StartsWith("powered", StringComparison.OrdinalIgnoreCase) ||
+                l.StartsWith("USB powered", StringComparison.OrdinalIgnoreCase))
+            .Take(8);
+        var batt = string.Join(Environment.NewLine, battLines);
+        if (!string.IsNullOrWhiteSpace(batt))
+        {
+            sb.AppendLine("Batterie:");
+            sb.AppendLine(batt);
+        }
+
+        return sb.ToString().TrimEnd();
+    }
+
+    /// <summary>
+    /// Remise d'usine via ADB (appareil déjà autorisé). Ouvre aussi l'écran réglages en secours.
+    /// </summary>
+    public async Task<string> FactoryResetAsync(string serial, CancellationToken ct = default)
+    {
+        _log.Warn($"Factory reset demandé pour {serial}");
+
+        // 1) Tentative API moderne
+        var wipe = await ShellAsync(serial, "cmd device_policy wipe-data 2>/dev/null", ct).ConfigureAwait(false);
+        if (!string.IsNullOrWhiteSpace(wipe) &&
+            !wipe.Contains("Unknown", StringComparison.OrdinalIgnoreCase) &&
+            !wipe.Contains("Exception", StringComparison.OrdinalIgnoreCase) &&
+            !wipe.Contains("Permission", StringComparison.OrdinalIgnoreCase))
+        {
+            return $"Wipe demandé via device_policy.\n{wipe.Trim()}";
+        }
+
+        // 2) Intent réglages factory reset (utilisateur confirme sur l'écran)
+        await ShellAsync(
+            serial,
+            "am start -a android.settings.FACTORY_RESET 2>/dev/null || am start -a android.settings.SETTINGS",
+            ct).ConfigureAwait(false);
+
+        // 3) Prépare wipe recovery (certains builds)
+        await ShellAsync(serial, "recovery --wipe_data 2>/dev/null", ct).ConfigureAwait(false);
+
+        return "Écran de réinitialisation ouvert (ou wipe recovery préparé).\n" +
+               "Confirmez sur le téléphone. Si rien ne s'affiche : Settings → System → Reset.";
+    }
+
+    public async Task<string> OpenSecuritySettingsAsync(string serial, CancellationToken ct = default)
+    {
+        await ShellAsync(serial, "am start -a android.settings.SECURITY_SETTINGS", ct).ConfigureAwait(false);
+        return "Réglages Sécurité / verrouillage ouverts sur l'appareil.";
+    }
+
     public async Task<string> ShellAsync(string serial, string command, CancellationToken ct = default)
     {
         return await RunAsync($"-s {serial} shell {command}", ct).ConfigureAwait(false);

@@ -7,7 +7,10 @@ public enum OperationKind
     RebootRecovery,
     OpenDeviceManager,
     PartnerStub,
-    AdbAppControl
+    AdbAppControl,
+    FirmwarePack,
+    /// <summary>Action locale réelle dispatchée par Id (ADB / fastboot / guide / pack).</summary>
+    DeviceAction
 }
 
 public sealed class DeviceOperation
