@@ -84,6 +84,10 @@ public sealed class FastbootService
     private static string? ResolveFastbootPath()
     {
         var candidates = new List<string>();
+        candidates.Add(Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+            "RhosTool", "platform-tools", "fastboot.exe"));
+
         var baseDir = AppContext.BaseDirectory;
         candidates.Add(Path.Combine(baseDir, "platform-tools", "fastboot.exe"));
         candidates.Add(Path.Combine(baseDir, "tools", "platform-tools", "fastboot.exe"));
@@ -108,7 +112,6 @@ public sealed class FastbootService
             candidates.Add(Path.Combine(segment.Trim('"'), "fastboot.exe"));
         }
 
-        // same folder as adb if found via sibling
         return candidates.FirstOrDefault(File.Exists);
     }
 }

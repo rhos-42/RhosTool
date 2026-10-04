@@ -344,6 +344,163 @@ public sealed class AdbService
         return $"{result.Trim()}\nSaved: {local}";
     }
 
+    public async Task<string> PushAsync(string serial, string localPath, string remotePath, CancellationToken ct = default)
+    {
+        if (!File.Exists(localPath) && !Directory.Exists(localPath))
+            throw new FileNotFoundException("Fichier/dossier local introuvable.", localPath);
+
+        _log.Info($"ADB push : {localPath} -> {remotePath}");
+        var output = await RunAsync($"-s {serial} push \"{localPath}\" \"{remotePath}\"", ct).ConfigureAwait(false);
+        return output.Trim();
+    }
+
+    public async Task<string> PullAsync(string serial, string remotePath, string localPath, CancellationToken ct = default)
+    {
+        var destDir = Path.GetDirectoryName(localPath);
+        if (!string.IsNullOrWhiteSpace(destDir))
+            Directory.CreateDirectory(destDir);
+
+        _log.Info($"ADB pull : {remotePath} -> {localPath}");
+        var output = await RunAsync($"-s {serial} pull \"{remotePath}\" \"{localPath}\"", ct).ConfigureAwait(false);
+        return output.Trim();
+    }
+
+    public async Task<string> ShellCommandAsync(string serial, string command, CancellationToken ct = default)
+    {
+        if (string.IsNullOrWhiteSpace(command))
+            throw new InvalidOperationException("Commande shell vide.");
+
+        _log.Info($"ADB shell : {command}");
+        var output = await ShellAsync(serial, command, ct).ConfigureAwait(false);
+        return string.IsNullOrWhiteSpace(output) ? "(aucune sortie)" : output.Trim();
+    }
+
+    public async Task<string> LogcatDumpAsync(string serial, string? localPath, CancellationToken ct = default)
+    {
+        _log.Info("ADB logcat -d");
+        var output = await RunAsync($"-s {serial} logcat -d -v time", ct).ConfigureAwait(false);
+        if (!string.IsNullOrWhiteSpace(localPath))
+        {
+            Directory.CreateDirectory(Path.GetDirectoryName(localPath)!);
+            await File.WriteAllTextAsync(localPath, output, ct).ConfigureAwait(false);
+            return $"Logcat sauvé : {localPath}\nLignes ≈ {output.Split('\n').Length}";
+        }
+
+        var lines = output.Split('\n');
+        var tail = string.Join(Environment.NewLine, lines.TakeLast(80));
+        return $"Logcat dump ({lines.Length} lignes, 80 dernières) :\n{tail}";
+    }
+
+    public async Task<string> ScreenshotAsync(string serial, string localPngPath, CancellationToken ct = default)
+    {
+        Directory.CreateDirectory(Path.GetDirectoryName(localPngPath)!);
+        var remote = "/sdcard/rhostool-screen.png";
+        _log.Info("ADB screencap");
+        await ShellAsync(serial, $"screencap -p {remote}", ct).ConfigureAwait(false);
+        var pull = await RunAsync($"-s {serial} pull \"{remote}\" \"{localPngPath}\"", ct).ConfigureAwait(false);
+        await ShellAsync(serial, $"rm {remote}", ct).ConfigureAwait(false);
+        return File.Exists(localPngPath)
+            ? $"Capture enregistrée : {localPngPath}"
+            : $"Échec capture.\n{pull}";
+    }
+
+    public async Task<string> BugreportAsync(string serial, string localZipPath, CancellationToken ct = default)
+    {
+        Directory.CreateDirectory(Path.GetDirectoryName(localZipPath)!);
+        _log.Info("ADB bugreport (peut prendre 1–2 min)");
+        var output = await RunAsync($"-s {serial} bugreport \"{localZipPath}\"", ct).ConfigureAwait(false);
+        return File.Exists(localZipPath)
+            ? $"Bugreport : {localZipPath}"
+            : $"Bugreport :\n{output.Trim()}";
+    }
+
+    public async Task<string> ListRemoteDirAsync(string serial, string remotePath, CancellationToken ct = default)
+    {
+        var path = string.IsNullOrWhiteSpace(remotePath) ? "/sdcard" : remotePath.Trim();
+        var output = await ShellAsync(serial, $"ls -la \"{path}\"", ct).ConfigureAwait(false);
+        return string.IsNullOrWhiteSpace(output) ? $"(vide) {path}" : output.Trim();
+    }
+
+    public async Task<string> EnableTcpIpAsync(string serial, int port = 5555, CancellationToken ct = default)
+    {
+        _log.Info($"ADB tcpip {port}");
+        var output = await RunAsync($"-s {serial} tcpip {port}", ct).ConfigureAwait(false);
+        return $"Mode TCP/IP activé (port {port}).\n{output.Trim()}\n" +
+               "Puis CONNECT WIFI avec l'IP du téléphone (Paramètres → À propos → État).";
+    }
+
+    public async Task<string> ConnectAsync(string hostPort, CancellationToken ct = default)
+    {
+        if (string.IsNullOrWhiteSpace(hostPort))
+            throw new InvalidOperationException("Adresse IP:port requise (ex: 192.168.1.20:5555).");
+
+        _log.Info($"ADB connect {hostPort}");
+        var output = await RunAsync($"connect {hostPort.Trim()}", ct).ConfigureAwait(false);
+        return output.Trim();
+    }
+
+    public async Task<string> DisconnectAsync(string? hostPort, CancellationToken ct = default)
+    {
+        var args = string.IsNullOrWhiteSpace(hostPort) ? "disconnect" : $"disconnect {hostPort.Trim()}";
+        _log.Info($"ADB {args}");
+        return (await RunAsync(args, ct).ConfigureAwait(false)).Trim();
+    }
+
+    public async Task<string> GetStateAsync(string serial, CancellationToken ct = default)
+    {
+        var state = (await RunAsync($"-s {serial} get-state", ct).ConfigureAwait(false)).Trim();
+        var serialNo = (await RunAsync($"-s {serial} get-serialno", ct).ConfigureAwait(false)).Trim();
+        return $"State: {state}\nSerial: {serialNo}";
+    }
+
+    public async Task<string> WaitForDeviceAsync(CancellationToken ct = default)
+    {
+        _log.Info("ADB wait-for-device…");
+        var output = await RunAsync("wait-for-device", ct).ConfigureAwait(false);
+        var devices = await StatusAsync(ct).ConfigureAwait(false);
+        return $"Appareil prêt.\n{output.Trim()}\n{devices}";
+    }
+
+    public async Task<string> RootAsync(string serial, CancellationToken ct = default)
+    {
+        var output = await RunAsync($"-s {serial} root", ct).ConfigureAwait(false);
+        return string.IsNullOrWhiteSpace(output)
+            ? "adb root demandé (nécessite build userdebug/eng ou root)."
+            : output.Trim();
+    }
+
+    public async Task<string> UnrootAsync(string serial, CancellationToken ct = default)
+    {
+        var output = await RunAsync($"-s {serial} unroot", ct).ConfigureAwait(false);
+        return string.IsNullOrWhiteSpace(output) ? "adb unroot demandé." : output.Trim();
+    }
+
+    public async Task<string> RemountAsync(string serial, CancellationToken ct = default)
+    {
+        var output = await RunAsync($"-s {serial} remount", ct).ConfigureAwait(false);
+        return string.IsNullOrWhiteSpace(output)
+            ? "adb remount demandé (root souvent requis)."
+            : output.Trim();
+    }
+
+    public async Task<string> RebootSideloadAsync(string serial, CancellationToken ct = default)
+    {
+        await RebootAsync(serial, "sideload", ct).ConfigureAwait(false);
+        return "Redémarrage sideload demandé.";
+    }
+
+    public async Task<string> SyncAsync(string serial, CancellationToken ct = default)
+    {
+        // sync all partitions that adb knows — may no-op on modern devices
+        var output = await RunAsync($"-s {serial} sync", ct).ConfigureAwait(false);
+        return string.IsNullOrWhiteSpace(output) ? "adb sync terminé (ou non supporté)." : output.Trim();
+    }
+
+    public async Task<string> ForwardListAsync(string serial, CancellationToken ct = default)
+    {
+        return (await RunAsync($"-s {serial} forward --list", ct).ConfigureAwait(false)).Trim();
+    }
+
     private async Task<DeviceInfo> EnrichAsync(DeviceInfo baseInfo, CancellationToken ct)
     {
         var model = await GetPropAsync(baseInfo.Serial, "ro.product.model", ct).ConfigureAwait(false);
@@ -413,6 +570,11 @@ public sealed class AdbService
     private static string? ResolveAdbPath()
     {
         var candidates = new List<string>();
+
+        // Prefer AppData extract (single-file publish)
+        candidates.Add(Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+            "RhosTool", "platform-tools", "adb.exe"));
 
         var baseDir = AppContext.BaseDirectory;
         candidates.Add(Path.Combine(baseDir, "platform-tools", "adb.exe"));

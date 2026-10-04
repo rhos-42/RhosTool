@@ -21,6 +21,20 @@ Voir le guide : [docs/AUTH-SUPABASE.md](docs/AUTH-SUPABASE.md)
 
 Config locale : `%AppData%\RhosTool\config.json`
 
+## Site web
+
+Site statique (compte + téléchargements) dans [`web/`](web/) — même Supabase que l’app.
+
+Voir [docs/SITE.md](docs/SITE.md) et [web/README.md](web/README.md).
+
+```powershell
+# Build portable + copie vers web/downloads/
+.\installer\publish-portable.ps1
+
+# Prévisualiser le site
+cd web; python -m http.server 8080
+```
+
 ## Prérequis
 
 - Windows 10/11
@@ -52,8 +66,10 @@ dotnet run --project .\src\RhosTool.App\RhosTool.App.csproj -c Release
 RhosTool.sln
 src/RhosTool.App/     # UI WPF
 src/RhosTool.Core/    # ADB, iOS, modules, logs
+web/                  # site (accueil, compte, downloads)
 tools/platform-tools/ # adb (généré par le script)
-installer/            # scripts setup / run
+installer/            # scripts setup / run / publish
+dist/                 # ZIP portable généré
 ```
 
 ## iOS (optionnel)

@@ -103,6 +103,8 @@ public static class BrandCatalog
             Op("reboot", "REBOOT", "Redémarrage ADB.", OperationKind.Reboot),
             Op("boot-device", "BOOT DEVICE", "Redémarrage ADB de l'appareil.", OperationKind.DeviceAction),
             Op("drivers", "USB DRIVERS", "Gestionnaire de périphériques.", OperationKind.OpenDeviceManager, false)),
+        AdbToolsTab(),
+        MtpFilesTab(),
         AppControlTab()
     };
 
@@ -137,6 +139,8 @@ public static class BrandCatalog
             Op("reboot-fb", "REBOOT BOOTLOADER", "Redémarrage en mode bootloader / fastboot.", OperationKind.DeviceAction),
             Op("boot-device", "BOOT DEVICE", "Redémarrage ADB de l'appareil.", OperationKind.DeviceAction),
             Op("drivers", "USB DRIVERS", "Gestionnaire de périphériques.", OperationKind.OpenDeviceManager, false)),
+        AdbToolsTab(),
+        MtpFilesTab(),
         AppControlTab()
     };
 
@@ -170,6 +174,8 @@ public static class BrandCatalog
             Op("reboot", "REBOOT", "Redémarrage ADB.", OperationKind.Reboot),
             Op("boot-device", "BOOT DEVICE", "Redémarrage ADB de l'appareil.", OperationKind.DeviceAction),
             Op("drivers", "USB DRIVERS", "Gestionnaire de périphériques.", OperationKind.OpenDeviceManager, false)),
+        AdbToolsTab(),
+        MtpFilesTab(),
         AppControlTab()
     };
 
@@ -199,6 +205,8 @@ public static class BrandCatalog
             Op("reboot", "REBOOT", "Redémarrage ADB.", OperationKind.Reboot),
             Op("boot-device", "BOOT DEVICE", "Redémarrage ADB de l'appareil.", OperationKind.DeviceAction),
             Op("drivers", "USB DRIVERS", "Gestionnaire de périphériques.", OperationKind.OpenDeviceManager, false)),
+        AdbToolsTab(),
+        MtpFilesTab(),
         AppControlTab()
     };
 
@@ -228,6 +236,8 @@ public static class BrandCatalog
             Op("reboot-rec", "REBOOT RECOVERY", "Recovery ADB.", OperationKind.RebootRecovery),
             Op("boot-device", "BOOT DEVICE", "Redémarrage ADB de l'appareil.", OperationKind.DeviceAction),
             Op("drivers", "USB DRIVERS", "Gestionnaire de périphériques.", OperationKind.OpenDeviceManager, false)),
+        AdbToolsTab(),
+        MtpFilesTab(),
         AppControlTab()
     };
 
@@ -244,6 +254,8 @@ public static class BrandCatalog
             Op("read-info", "READ INFO", "Infos ADB.", OperationKind.ReadInfo),
             Op("reboot", "REBOOT", "Redémarrage ADB.", OperationKind.Reboot),
             Op("drivers", "USB DRIVERS", "Gestionnaire de périphériques.", OperationKind.OpenDeviceManager, false)),
+        AdbToolsTab(),
+        MtpFilesTab(),
         AppControlTab()
     };
 
@@ -272,6 +284,8 @@ public static class BrandCatalog
             Op("reboot", "REBOOT", "Redémarrage ADB.", OperationKind.Reboot),
             Op("boot-device", "BOOT DEVICE", "Redémarrage ADB de l'appareil.", OperationKind.DeviceAction),
             Op("drivers", "USB DRIVERS", "Gestionnaire de périphériques.", OperationKind.OpenDeviceManager, false)),
+        AdbToolsTab(),
+        MtpFilesTab(),
         AppControlTab()
     };
 
@@ -304,6 +318,38 @@ public static class BrandCatalog
 
     private static FunctionTab SpecialTab(params DeviceOperation[] ops) =>
         Tab("special", "SPECIAL", ops);
+
+    private static FunctionTab AdbToolsTab() => Tab("adbtools", "ADB TOOLS",
+        Op("adb-status", "ADB DEVICES", "Démarre le serveur et liste les appareils.", OperationKind.AdbTools, false),
+        Op("adb-wait", "WAIT DEVICE", "Attend qu'un appareil ADB soit prêt.", OperationKind.AdbTools, false),
+        Op("adb-state", "GET STATE", "État / série ADB de l'appareil.", OperationKind.AdbTools),
+        Op("adb-tcpip", "TCPIP 5555", "Active ADB en Wi‑Fi (port 5555).", OperationKind.AdbTools),
+        Op("adb-connect", "CONNECT WIFI", "Connecte ADB à IP:port.", OperationKind.AdbTools, false),
+        Op("adb-disconnect", "DISCONNECT", "Déconnecte une session ADB réseau.", OperationKind.AdbTools, false),
+        Op("adb-ls", "LIST /SDCARD", "Liste un dossier distant (défaut /sdcard).", OperationKind.AdbTools),
+        Op("adb-push", "PUSH FILE", "Envoie un fichier/dossier PC → téléphone.", OperationKind.AdbTools),
+        Op("adb-pull", "PULL FILE", "Récupère un fichier téléphone → PC.", OperationKind.AdbTools),
+        Op("adb-shell", "SHELL", "Exécute une commande shell ADB.", OperationKind.AdbTools),
+        Op("adb-logcat", "LOGCAT DUMP", "Dump logcat (option sauver fichier).", OperationKind.AdbTools),
+        Op("adb-screencap", "SCREENSHOT", "Capture d'écran PNG via screencap.", OperationKind.AdbTools),
+        Op("adb-bugreport", "BUGREPORT", "Génère un bugreport (peut être long).", OperationKind.AdbTools),
+        Op("adb-reboot", "REBOOT", "Redémarrage ADB.", OperationKind.AdbTools),
+        Op("adb-reboot-recovery", "REBOOT RECOVERY", "Redémarrage recovery.", OperationKind.AdbTools),
+        Op("adb-reboot-bootloader", "REBOOT BOOTLOADER", "Redémarrage bootloader/fastboot.", OperationKind.AdbTools),
+        Op("adb-sideload", "REBOOT SIDELOAD", "Redémarrage mode sideload.", OperationKind.AdbTools),
+        Op("adb-root", "ADB ROOT", "Redémarre adbd en root (si build le permet).", OperationKind.AdbTools),
+        Op("adb-unroot", "ADB UNROOT", "Repasse adbd en mode normal.", OperationKind.AdbTools),
+        Op("adb-remount", "REMOUNT", "Remount système RW (souvent root).", OperationKind.AdbTools),
+        Op("adb-sync", "SYNC", "adb sync (selon support appareil).", OperationKind.AdbTools),
+        Op("adb-forward-list", "FORWARD LIST", "Liste les redirections de ports ADB.", OperationKind.AdbTools));
+
+    private static FunctionTab MtpFilesTab() => Tab("mtp", "MTP FILES",
+        Op("mtp-devices", "MTP DEVICES", "Liste les appareils MTP / stockage portable Windows.", OperationKind.MtpFiles, false),
+        Op("mtp-list", "MTP LIST", "Liste les fichiers d'un dossier MTP (ex: Internal storage\\DCIM).", OperationKind.MtpFiles, false),
+        Op("mtp-download", "MTP DOWNLOAD", "Télécharge un fichier MTP → PC.", OperationKind.MtpFiles, false),
+        Op("mtp-upload", "MTP UPLOAD", "Envoie un fichier PC → dossier MTP.", OperationKind.MtpFiles, false),
+        Op("mtp-mkdir", "MTP MKDIR", "Crée un dossier sur le stockage MTP.", OperationKind.MtpFiles, false),
+        Op("mtp-delete", "MTP DELETE", "Supprime un fichier/dossier MTP.", OperationKind.MtpFiles, false));
 
     private static FunctionTab AppControlTab() => Tab("appctl", "ADB APP CONTROL",
         Op("list-pkgs", "LIST PACKAGES", "Liste tous les packages installés.", OperationKind.AdbAppControl),
