@@ -2,6 +2,10 @@
 
 Site statique (accueil, compte, téléchargements) branché sur le **même projet Supabase** que l’application Windows.
 
+## URL publique
+
+https://rhos-42.github.io/RhosTool/
+
 ## Lancer en local
 
 ```powershell

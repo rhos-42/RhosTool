@@ -31,6 +31,14 @@ tools/platform-tools/
 tools/platform-tools.zip
 tools/libimobiledevice/
 
+# Build / publish outputs (use installer\publish-portable.ps1)
+dist/
+src/RhosTool.App/Resources/platform-tools.zip
+
+# Large download artifact — served via GitHub Releases when possible;
+# local copy for Pages may exist under web/downloads/ (generated, optional commit)
+# Prefer: gh release upload + downloadUrl pointing to the Release asset.
+
 # Secrets / local auth (never commit)
 **/appsettings.Local.json
 **/config.local.json

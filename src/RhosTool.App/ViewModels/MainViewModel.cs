@@ -911,7 +911,7 @@ public partial class MainViewModel : ObservableObject
         }
     }
 
-    private const string WebsiteUrl = "https://github.com/rhos-42/RhosTool/tree/main/web";
+    private const string WebsiteUrl = "https://rhos-42.github.io/RhosTool/";
 
     [RelayCommand]
     private void OpenConfig()
