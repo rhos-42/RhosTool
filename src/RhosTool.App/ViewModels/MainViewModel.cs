@@ -20,6 +20,7 @@ public partial class MainViewModel : ObservableObject
     private readonly IosDeviceService _ios;
     private readonly FirmwarePackService _packs;
     private readonly FastbootService _fastboot;
+    private readonly MtpService _mtp;
     private readonly OperationRunner _runner;
     private readonly AuthService _auth;
     private readonly DispatcherTimer _pollTimer;
@@ -37,6 +38,7 @@ public partial class MainViewModel : ObservableObject
         _ios = new IosDeviceService(_log);
         _packs = new FirmwarePackService();
         _fastboot = new FastbootService(_log);
+        _mtp = new MtpService(_log);
         _runner = new OperationRunner(_adb, _ios, _log, _packs, _fastboot);
 
         _log.LineAdded += line =>
@@ -349,6 +351,22 @@ public partial class MainViewModel : ObservableObject
                 return;
             }
         }
+        else if (operation.Kind == OperationKind.AdbTools)
+        {
+            userInput = ResolveAdbToolsInput(operation);
+            if (userInput is null && AdbToolsNeedsInput(operation.Id))
+            {
+                return;
+            }
+        }
+        else if (operation.Kind == OperationKind.MtpFiles)
+        {
+            userInput = ResolveMtpInput(operation);
+            if (userInput is null && MtpNeedsInput(operation.Id))
+            {
+                return;
+            }
+        }
 
         IsBusy = true;
         _opCts = new CancellationTokenSource();
@@ -375,7 +393,16 @@ public partial class MainViewModel : ObservableObject
                 return;
             }
 
-            var result = await _runner.RunAsync(operation, ConnectedDevice, userInput, _opCts.Token);
+            string result;
+            if (operation.Kind == OperationKind.MtpFiles)
+            {
+                result = await _mtp.RunAsync(operation.Id, userInput, _opCts.Token);
+            }
+            else
+            {
+                result = await _runner.RunAsync(operation, ConnectedDevice, userInput, _opCts.Token);
+            }
+
             ProgressValue = 100;
             ProgressText = "100%";
 
@@ -444,6 +471,209 @@ public partial class MainViewModel : ObservableObject
         PackPathText = string.IsNullOrWhiteSpace(manifest.PackDir)
             ? manifest.SourcePath
             : manifest.PackDir;
+    }
+
+    private static bool AdbToolsNeedsInput(string id) =>
+        id is "adb-connect" or "adb-push" or "adb-pull" or "adb-shell" or "adb-screencap" or "adb-bugreport";
+
+    private static bool MtpNeedsInput(string id) =>
+        id is "mtp-list" or "mtp-download" or "mtp-upload" or "mtp-mkdir" or "mtp-delete";
+
+    private string? ResolveAdbToolsInput(DeviceOperation operation)
+    {
+        var owner = Application.Current?.MainWindow;
+        switch (operation.Id)
+        {
+            case "adb-connect":
+            {
+                var host = Microsoft.VisualBasic.Interaction.InputBox(
+                    "Adresse ADB Wi‑Fi (IP:port)",
+                    "CONNECT WIFI",
+                    "192.168.1.20:5555");
+                return string.IsNullOrWhiteSpace(host) ? null : host.Trim();
+            }
+
+            case "adb-disconnect":
+            {
+                var host = Microsoft.VisualBasic.Interaction.InputBox(
+                    "IP:port à déconnecter (vide = tous)",
+                    "DISCONNECT",
+                    "");
+                return host?.Trim() ?? "";
+            }
+
+            case "adb-push":
+            {
+                var dlg = new Microsoft.Win32.OpenFileDialog
+                {
+                    Title = "Fichier à envoyer (PUSH)",
+                    CheckFileExists = true
+                };
+                if (dlg.ShowDialog(owner) != true) return null;
+                var remote = Microsoft.VisualBasic.Interaction.InputBox(
+                    "Chemin distant sur le téléphone",
+                    "ADB PUSH",
+                    "/sdcard/Download/" + Path.GetFileName(dlg.FileName));
+                if (string.IsNullOrWhiteSpace(remote)) return null;
+                return $"{dlg.FileName}|{remote.Trim()}";
+            }
+
+            case "adb-pull":
+            {
+                var remote = Microsoft.VisualBasic.Interaction.InputBox(
+                    "Chemin distant à récupérer",
+                    "ADB PULL",
+                    "/sdcard/Download/");
+                if (string.IsNullOrWhiteSpace(remote)) return null;
+                var save = new Microsoft.Win32.SaveFileDialog
+                {
+                    Title = "Enregistrer sous",
+                    FileName = Path.GetFileName(remote.TrimEnd('/', '\\'))
+                };
+                if (save.ShowDialog(owner) != true) return null;
+                return $"{remote.Trim()}|{save.FileName}";
+            }
+
+            case "adb-ls":
+            {
+                var path = Microsoft.VisualBasic.Interaction.InputBox(
+                    "Dossier distant",
+                    "LIST DIR",
+                    "/sdcard");
+                return string.IsNullOrWhiteSpace(path) ? "/sdcard" : path.Trim();
+            }
+
+            case "adb-shell":
+            {
+                var cmd = Microsoft.VisualBasic.Interaction.InputBox(
+                    "Commande shell",
+                    "ADB SHELL",
+                    "getprop ro.product.model");
+                return string.IsNullOrWhiteSpace(cmd) ? null : cmd.Trim();
+            }
+
+            case "adb-logcat":
+            {
+                var save = MessageBox.Show(
+                    owner,
+                    "Oui = sauver dans un fichier\nNon = afficher les dernières lignes",
+                    "LOGCAT",
+                    MessageBoxButton.YesNoCancel);
+                if (save == MessageBoxResult.Cancel) return null;
+                if (save == MessageBoxResult.No) return null;
+                var dlg = new Microsoft.Win32.SaveFileDialog
+                {
+                    Title = "Sauver logcat",
+                    Filter = "Log (*.txt)|*.txt",
+                    FileName = $"logcat-{DateTime.Now:yyyyMMdd-HHmmss}.txt"
+                };
+                return dlg.ShowDialog(owner) == true ? dlg.FileName : null;
+            }
+
+            case "adb-screencap":
+            {
+                var dlg = new Microsoft.Win32.SaveFileDialog
+                {
+                    Title = "Capture d'écran",
+                    Filter = "PNG (*.png)|*.png",
+                    FileName = $"screen-{DateTime.Now:yyyyMMdd-HHmmss}.png"
+                };
+                return dlg.ShowDialog(owner) == true ? dlg.FileName : null;
+            }
+
+            case "adb-bugreport":
+            {
+                var dlg = new Microsoft.Win32.SaveFileDialog
+                {
+                    Title = "Bugreport",
+                    Filter = "Zip (*.zip)|*.zip|Tous (*.*)|*.*",
+                    FileName = $"bugreport-{DateTime.Now:yyyyMMdd-HHmmss}.zip"
+                };
+                return dlg.ShowDialog(owner) == true ? dlg.FileName : null;
+            }
+
+            default:
+                return null;
+        }
+    }
+
+    private string? ResolveMtpInput(DeviceOperation operation)
+    {
+        var owner = Application.Current?.MainWindow;
+        switch (operation.Id)
+        {
+            case "mtp-devices":
+                return null;
+
+            case "mtp-list":
+            {
+                var path = Microsoft.VisualBasic.Interaction.InputBox(
+                    "Dossier MTP (vide = racine du 1er stockage)\nEx: Internal storage\\DCIM",
+                    "MTP LIST",
+                    "Internal storage\\DCIM");
+                return path?.Trim() ?? "";
+            }
+
+            case "mtp-download":
+            {
+                var remote = Microsoft.VisualBasic.Interaction.InputBox(
+                    "Fichier MTP distant\nEx: Internal storage\\DCIM\\Camera\\IMG.jpg",
+                    "MTP DOWNLOAD",
+                    "Internal storage\\DCIM\\");
+                if (string.IsNullOrWhiteSpace(remote)) return null;
+                var dlg = new Microsoft.Win32.SaveFileDialog
+                {
+                    Title = "Enregistrer le fichier MTP",
+                    FileName = Path.GetFileName(remote.TrimEnd('\\', '/'))
+                };
+                if (dlg.ShowDialog(owner) != true) return null;
+                return $"{remote.Trim()}|{dlg.FileName}";
+            }
+
+            case "mtp-upload":
+            {
+                var dlg = new Microsoft.Win32.OpenFileDialog
+                {
+                    Title = "Fichier à envoyer via MTP",
+                    CheckFileExists = true
+                };
+                if (dlg.ShowDialog(owner) != true) return null;
+                var remote = Microsoft.VisualBasic.Interaction.InputBox(
+                    "Dossier MTP de destination",
+                    "MTP UPLOAD",
+                    "Internal storage\\Download");
+                if (string.IsNullOrWhiteSpace(remote)) return null;
+                return $"{dlg.FileName}|{remote.Trim()}";
+            }
+
+            case "mtp-mkdir":
+            {
+                var path = Microsoft.VisualBasic.Interaction.InputBox(
+                    "Dossier MTP à créer",
+                    "MTP MKDIR",
+                    "Internal storage\\RhosTool");
+                return string.IsNullOrWhiteSpace(path) ? null : path.Trim();
+            }
+
+            case "mtp-delete":
+            {
+                var path = Microsoft.VisualBasic.Interaction.InputBox(
+                    "Chemin MTP à supprimer",
+                    "MTP DELETE",
+                    "");
+                if (string.IsNullOrWhiteSpace(path)) return null;
+                var ok = MessageBox.Show(
+                    owner,
+                    $"Supprimer définitivement ?\n{path}",
+                    "MTP DELETE",
+                    MessageBoxButton.YesNo,
+                    MessageBoxImage.Warning);
+                return ok == MessageBoxResult.Yes ? path.Trim() : null;
+            }
+
+            default:
+                return null;
+        }
     }
 
     private string? ResolveFirmwarePackInput(DeviceOperation operation)
@@ -681,6 +911,8 @@ public partial class MainViewModel : ObservableObject
         }
     }
 
+    private const string WebsiteUrl = "https://rhos-42.github.io/RhosTool/";
+
     [RelayCommand]
     private void OpenConfig()
     {
@@ -691,8 +923,9 @@ public partial class MainViewModel : ObservableObject
             $"User : {UserDisplay}\n" +
             $"{CreditsDisplay}\n" +
             $"Serveur : {ServerStatus}\n\n" +
-            $"Config : {configPath}\n\n" +
-            "Oui = Déconnexion\nNon = Ouvrir le dossier config\nAnnuler = Fermer";
+            $"Config : {configPath}\n" +
+            $"Site web : {WebsiteUrl}\n\n" +
+            "Oui = Déconnexion\nNon = Ouvrir le dossier config\nAnnuler = Ouvrir le site web";
 
         var result = MessageBox.Show(
             info,
@@ -719,6 +952,24 @@ public partial class MainViewModel : ObservableObject
                 UseShellExecute = true
             });
             _log.Info($"Config folder: {LocalAuthStore.AppDataDir}");
+            return;
+        }
+
+        if (result == MessageBoxResult.Cancel)
+        {
+            try
+            {
+                Process.Start(new ProcessStartInfo
+                {
+                    FileName = WebsiteUrl,
+                    UseShellExecute = true
+                });
+                _log.Info($"Site web: {WebsiteUrl}");
+            }
+            catch (Exception ex)
+            {
+                _log.Warn($"Impossible d'ouvrir le site : {ex.Message}");
+            }
         }
     }
 

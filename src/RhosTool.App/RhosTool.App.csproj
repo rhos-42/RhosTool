@@ -7,12 +7,22 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
     <ApplicationTitle>RhosTool</ApplicationTitle>
+    <Product>RhosTool</Product>
+    <Company>RhosTool</Company>
+    <AssemblyTitle>RhosTool</AssemblyTitle>
+    <Description>RhosTool — atelier mobile ADB / MTP / firmware</Description>
+    <Version>1.0.0</Version>
+    <FileVersion>1.0.0.0</FileVersion>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
     <RootNamespace>RhosTool.App</RootNamespace>
     <AssemblyName>RhosTool</AssemblyName>
+    <ApplicationIcon Condition="Exists('Assets\\rhostool.ico')">Assets\rhostool.ico</ApplicationIcon>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.3.2" />
+    <PackageReference Include="MediaDevices" Version="1.10.0" />
+    <PackageReference Include="Microsoft.VisualBasic" Version="10.3.0" />
     <PackageReference Include="System.IO.Ports" Version="8.0.0" />
     <PackageReference Include="System.Security.Cryptography.ProtectedData" Version="8.0.0" />
   </ItemGroup>
@@ -25,6 +35,11 @@
     <None Update="appsettings.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+  </ItemGroup>
+
+  <!-- Bundle ADB/fastboot embarqué pour publish single-file -->
+  <ItemGroup Condition="Exists('Resources\platform-tools.zip')">
+    <EmbeddedResource Include="Resources\platform-tools.zip" LogicalName="platform-tools.zip" />
   </ItemGroup>
 
   <Target Name="CopyPlatformTools" AfterTargets="Build">

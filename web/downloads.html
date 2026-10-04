@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Téléchargements — RhosTool</title>
+  <link rel="stylesheet" href="css/site.css" />
+</head>
+<body>
+  <div class="wrap">
+    <header class="topbar">
+      <a class="brand" href="index.html">RhosTool <span>downloads</span></a>
+      <nav class="nav">
+        <a href="index.html">Accueil</a>
+        <a class="active" href="downloads.html">Téléchargements</a>
+        <a href="account.html">Compte</a>
+      </nav>
+    </header>
+
+    <section class="hero" style="padding-bottom:1rem">
+      <h1>Téléchargements</h1>
+      <p>Fichiers officiels RhosTool uniquement — pas de miroirs tiers.</p>
+    </section>
+
+    <ul class="dl-list">
+      <li>
+        <div>
+          <strong id="dl-label">RhosTool Portable (Windows)</strong>
+          <div class="dl-meta">ZIP · single-file · .NET 8 self-contained</div>
+        </div>
+        <a class="btn btn-primary" id="dl-main" href="downloads/RhosTool-Portable.zip">Télécharger</a>
+      </li>
+      <li>
+        <div>
+          <strong>GitHub Releases</strong>
+          <div class="dl-meta">Versions publiées et notes de mise à jour</div>
+        </div>
+        <a class="btn" id="dl-releases" href="https://github.com/rhos-42/RhosTool/releases" target="_blank" rel="noopener">Ouvrir</a>
+      </li>
+      <li>
+        <div>
+          <strong>Code source</strong>
+          <div class="dl-meta">Dépôt public</div>
+        </div>
+        <a class="btn" id="dl-gh" href="https://github.com/rhos-42/RhosTool" target="_blank" rel="noopener">GitHub</a>
+      </li>
+    </ul>
+
+    <p class="note">
+      Après téléchargement : dézippez, lancez <code>RhosTool.exe</code>, puis connectez-vous
+      avec le même compte que sur la page Compte.
+    </p>
+
+    <footer class="footer">
+      <span>Fichier servi depuis <code>web/downloads/</code> ou GitHub Releases</span>
+      <a href="account.html">Compte</a>
+    </footer>
+  </div>
+  <script src="js/config.js"></script>
+  <script>
+    const c = window.RHOS_CONFIG || {};
+    if (c.downloadUrl) document.getElementById("dl-main").href = c.downloadUrl;
+    if (c.downloadLabel) document.getElementById("dl-label").textContent = c.downloadLabel;
+    if (c.releasesUrl) document.getElementById("dl-releases").href = c.releasesUrl;
+    if (c.githubUrl) document.getElementById("dl-gh").href = c.githubUrl;
+  </script>
+</body>
+</html>
