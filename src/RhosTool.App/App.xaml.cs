@@ -1,3 +1,4 @@
+using System.Threading;
 using System.Windows;
 using System.Windows.Threading;
 using RhosTool.App.Services;
@@ -8,11 +9,27 @@ namespace RhosTool.App;
 
 public partial class App : Application
 {
+    private static Mutex? _singleInstanceMutex;
+
     public static AuthService Auth { get; private set; } = null!;
 
     protected override async void OnStartup(StartupEventArgs e)
     {
         base.OnStartup(e);
+
+        // Une seule instance à la fois
+        const string mutexName = @"Local\RhosTool.SingleInstance.v1";
+        _singleInstanceMutex = new Mutex(true, mutexName, out var createdNew);
+        if (!createdNew)
+        {
+            MessageBox.Show(
+                "RhosTool est déjà en cours d'exécution sur cet ordinateur.\nUne seule instance est autorisée.",
+                "RhosTool",
+                MessageBoxButton.OK,
+                MessageBoxImage.Information);
+            Shutdown();
+            return;
+        }
 
         // Empêche la fermeture auto quand LoginWindow se ferme (sinon plus de MainWindow)
         ShutdownMode = ShutdownMode.OnExplicitShutdown;
@@ -26,6 +43,8 @@ public partial class App : Application
 
         try
         {
+            PlatformToolsBootstrap.EnsureAvailable();
+
             var config = LocalAuthStore.LoadOrCreateConfig();
             Auth = new AuthService(config);
 
@@ -62,6 +81,21 @@ public partial class App : Application
                 MessageBoxImage.Error);
             Shutdown();
         }
+    }
+
+    protected override void OnExit(ExitEventArgs e)
+    {
+        try
+        {
+            _singleInstanceMutex?.ReleaseMutex();
+            _singleInstanceMutex?.Dispose();
+        }
+        catch
+        {
+            // ignore
+        }
+
+        base.OnExit(e);
     }
 
     private void ShowMain()

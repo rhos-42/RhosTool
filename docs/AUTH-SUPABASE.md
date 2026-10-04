@@ -88,6 +88,8 @@ Dans **Table Editor** → `profiles`, modifiez la colonne `credits` pour un util
 
 Le footer affiche `Credits: X.XX` après connexion.
 
+Le site `web/account.html` utilise la **même** URL + clé anon (fichier `web/js/config.js`).
+
 ## Dépannage
 
 | Message | Cause |

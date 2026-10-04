@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>RhosTool</title>
+  <link rel="stylesheet" href="css/site.css" />
+</head>
+<body>
+  <div class="wrap">
+    <header class="topbar">
+      <a class="brand" href="index.html">RhosTool <span>atelier Android / iOS</span></a>
+      <nav class="nav">
+        <a class="active" href="index.html">Accueil</a>
+        <a href="downloads.html">Téléchargements</a>
+        <a href="account.html">Compte</a>
+      </nav>
+    </header>
+
+    <section class="hero">
+      <h1>RhosTool</h1>
+      <p>
+        Outil Windows pour diagnostics USB, ADB / fastboot / MTP, packs firmware
+        et compte crédits en ligne — même projet Supabase que l’application.
+      </p>
+      <div class="actions">
+        <a class="btn btn-primary" href="downloads.html">Télécharger l’app</a>
+        <a class="btn" href="account.html">Créer un compte</a>
+      </div>
+    </section>
+
+    <section class="grid">
+      <article class="panel">
+        <h3>Portable Windows</h3>
+        <p>ZIP single-file avec platform-tools embarqués à la première exécution.</p>
+      </article>
+      <article class="panel">
+        <h3>Compte & crédits</h3>
+        <p>Login / inscription synchronisés avec l’exe via Supabase Auth + table profiles.</p>
+      </article>
+      <article class="panel">
+        <h3>Usage légitime</h3>
+        <p>Réservé aux appareils dont vous êtes propriétaire ou pour lesquels vous avez une autorisation.</p>
+      </article>
+    </section>
+
+    <footer class="footer">
+      <span>© RhosTool</span>
+      <a id="gh" href="https://github.com/rhos-42/RhosTool" target="_blank" rel="noopener">GitHub</a>
+    </footer>
+  </div>
+  <script src="js/config.js"></script>
+  <script>
+    const c = window.RHOS_CONFIG;
+    if (c?.githubUrl) document.getElementById("gh").href = c.githubUrl;
+  </script>
+</body>
+</html>
