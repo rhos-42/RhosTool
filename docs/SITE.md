@@ -8,6 +8,15 @@ Le dossier `web/` contient un site statique (accueil, compte, téléchargements)
 
 Déploiement automatique via [`.github/workflows/deploy-pages.yml`](../.github/workflows/deploy-pages.yml) (GitHub Pages / Actions).
 
+### Prérequis GitHub Pages
+
+Le dépôt est actuellement **privé**. Pages ne peut être activé par l’agent (droits insuffisants). Une fois :
+
+1. soit le dépôt rendu **public**,  
+2. soit un plan GitHub avec Pages sur dépôt privé,
+
+allez dans **Settings → Pages → Build and deployment → Source = GitHub Actions**, puis relancez le workflow *Deploy GitHub Pages*.
+
 ## État
 
 | Élément | Statut |
