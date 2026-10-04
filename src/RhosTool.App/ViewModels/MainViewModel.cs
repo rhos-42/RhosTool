@@ -681,6 +681,9 @@ public partial class MainViewModel : ObservableObject
         }
     }
 
+    /// <summary>Site web RhosTool (téléchargements + compte Supabase partagé).</summary>
+    public const string WebsiteUrl = "https://rhos-42.github.io/RhosTool/";
+
     [RelayCommand]
     private void OpenConfig()
     {
@@ -691,8 +694,9 @@ public partial class MainViewModel : ObservableObject
             $"User : {UserDisplay}\n" +
             $"{CreditsDisplay}\n" +
             $"Serveur : {ServerStatus}\n\n" +
-            $"Config : {configPath}\n\n" +
-            "Oui = Déconnexion\nNon = Ouvrir le dossier config\nAnnuler = Fermer";
+            $"Config : {configPath}\n" +
+            $"Site : {WebsiteUrl}\n\n" +
+            "Oui = Déconnexion\nNon = Ouvrir le site\nAnnuler = Ouvrir le dossier config";
 
         var result = MessageBox.Show(
             info,
@@ -711,6 +715,12 @@ public partial class MainViewModel : ObservableObject
 
         if (result == MessageBoxResult.No)
         {
+            OpenWebsite();
+            return;
+        }
+
+        if (result == MessageBoxResult.Cancel)
+        {
             LocalAuthStore.LoadOrCreateConfig();
             Process.Start(new ProcessStartInfo
             {
@@ -719,6 +729,29 @@ public partial class MainViewModel : ObservableObject
                 UseShellExecute = true
             });
             _log.Info($"Config folder: {LocalAuthStore.AppDataDir}");
+        }
+    }
+
+    [RelayCommand]
+    private void OpenWebsite()
+    {
+        try
+        {
+            Process.Start(new ProcessStartInfo
+            {
+                FileName = WebsiteUrl,
+                UseShellExecute = true
+            });
+            _log.Info($"Site ouvert : {WebsiteUrl}");
+        }
+        catch (Exception ex)
+        {
+            _log.Error($"Impossible d'ouvrir le site : {ex.Message}");
+            MessageBox.Show(
+                $"Ouvrez manuellement :\n{WebsiteUrl}",
+                "RhosTool",
+                MessageBoxButton.OK,
+                MessageBoxImage.Information);
         }
     }
 

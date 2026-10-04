@@ -2,6 +2,21 @@
 
 Guide rapide pour brancher RhosTool à un projet Supabase.
 
+## Site + app = même projet
+
+Le site statique [`web/`](../web/) et l’application Windows utilisent **le même projet Supabase** (URL + clé **anon**).
+
+| Client | Config |
+|--------|--------|
+| Exe RhosTool | `%AppData%\RhosTool\config.json` (via `installer\link-supabase.ps1`) |
+| Site `web/` | [`web/assets/config.js`](../web/assets/config.js) |
+
+Un compte créé sur `web/account.html` fonctionne dans l’exe, et inversement. Les crédits sont lus dans la table `profiles`.
+
+Téléchargement du binaire : page [`web/downloads.html`](../web/downloads.html) → `RhosTool-Portable.zip` (GitHub Releases, pas de catalogue UnlockTool).
+
+Dans l’exe : bouton **SITE** ou **CONFIG** → *Ouvrir le site* (`https://rhos-42.github.io/RhosTool/`).
+
 ## 1. Créer le projet
 
 1. Allez sur [https://supabase.com](https://supabase.com) et créez un compte (gratuit).

@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" role="img" aria-label="Interface atelier RhosTool">
+  <defs>
+    <linearGradient id="desk" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#243140"/>
+      <stop offset="100%" stop-color="#141a22"/>
+    </linearGradient>
+    <linearGradient id="screen" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#2b2b2b"/>
+      <stop offset="100%" stop-color="#1a1a1a"/>
+    </linearGradient>
+    <filter id="soft" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="18" stdDeviation="24" flood-color="#000" flood-opacity="0.45"/>
+    </filter>
+  </defs>
+  <rect width="1600" height="900" fill="url(#desk)"/>
+  <g opacity="0.2">
+    <path d="M0 720 H1600" stroke="#fff" stroke-width="1"/>
+    <path d="M0 760 H1600" stroke="#fff" stroke-width="1"/>
+    <path d="M120 0 V900" stroke="#fff" stroke-width="1"/>
+    <path d="M1480 0 V900" stroke="#fff" stroke-width="1"/>
+  </g>
+  <g filter="url(#soft)">
+    <rect x="220" y="120" width="1160" height="660" rx="10" fill="#0f1318" stroke="#5a5a5a"/>
+    <rect x="240" y="140" width="1120" height="620" rx="4" fill="url(#screen)"/>
+    <rect x="240" y="140" width="1120" height="48" fill="#353535"/>
+    <text x="260" y="172" fill="#ffc107" font-family="Segoe UI, Arial, sans-serif" font-size="22" font-weight="700">RhosTool</text>
+    <text x="380" y="172" fill="#b0b0b0" font-family="Segoe UI, Arial, sans-serif" font-size="14">Online · Supabase</text>
+    <rect x="240" y="188" width="220" height="572" fill="#2b2b2b"/>
+    <rect x="256" y="210" width="188" height="36" rx="2" fill="#ffc107"/>
+    <rect x="256" y="258" width="188" height="28" rx="2" fill="#3a3a3a"/>
+    <rect x="256" y="298" width="188" height="28" rx="2" fill="#3a3a3a"/>
+    <rect x="256" y="338" width="188" height="28" rx="2" fill="#3a3a3a"/>
+    <rect x="256" y="378" width="188" height="28" rx="2" fill="#3a3a3a"/>
+    <rect x="480" y="210" width="860" height="40" rx="2" fill="#353535"/>
+    <rect x="496" y="220" width="90" height="20" rx="2" fill="#ff9800"/>
+    <rect x="598" y="220" width="90" height="20" rx="2" fill="#4a4a4a"/>
+    <rect x="700" y="220" width="110" height="20" rx="2" fill="#4a4a4a"/>
+    <rect x="480" y="270" width="420" height="460" rx="2" fill="#121212" stroke="#5a5a5a"/>
+    <text x="500" y="300" fill="#76ff03" font-family="Consolas, monospace" font-size="14">ADB server ready.</text>
+    <text x="500" y="326" fill="#e0e0e0" font-family="Consolas, monospace" font-size="14">Brand selected: Samsung</text>
+    <text x="500" y="352" fill="#e0e0e0" font-family="Consolas, monospace" font-size="14">USB: SM-A156B [R5CX12]</text>
+    <text x="500" y="378" fill="#ffab40" font-family="Consolas, monospace" font-size="14">Pack: ready · Odin slots</text>
+    <rect x="920" y="270" width="420" height="460" rx="2" fill="#1e1e1e" stroke="#5a5a5a"/>
+    <rect x="940" y="296" width="180" height="44" rx="2" fill="#ffc107"/>
+    <rect x="1140" y="296" width="180" height="44" rx="2" fill="#353535" stroke="#7a7a7a"/>
+    <rect x="940" y="356" width="380" height="44" rx="2" fill="#353535" stroke="#7a7a7a"/>
+    <rect x="940" y="416" width="380" height="44" rx="2" fill="#353535" stroke="#7a7a7a"/>
+    <rect x="940" y="476" width="380" height="44" rx="2" fill="#353535" stroke="#7a7a7a"/>
+    <rect x="940" y="536" width="180" height="44" rx="2" fill="#ff9800"/>
+    <rect x="1140" y="536" width="180" height="44" rx="2" fill="#353535" stroke="#7a7a7a"/>
+  </g>
+  <g opacity="0.55">
+    <rect x="1280" y="780" width="180" height="14" rx="2" fill="#ffc107"/>
+    <rect x="148" y="780" width="90" height="14" rx="2" fill="#7a8794"/>
+  </g>
+</svg>

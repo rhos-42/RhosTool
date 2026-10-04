@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Compte — RhosTool</title>
+    <meta
+      name="description"
+      content="Connexion, inscription et crédits RhosTool via Supabase (même projet que l’application Windows)."
+    />
+    <link rel="stylesheet" href="assets/app.css" />
+  </head>
+  <body data-page="account">
+    <div class="shell">
+      <header class="nav">
+        <a class="brand" href="index.html">Rhos<span>Tool</span></a>
+        <ul class="nav-links">
+          <li><a href="downloads.html">Téléchargements</a></li>
+          <li><a href="account.html" aria-current="page">Compte</a></li>
+          <li><a class="nav-cta" href="downloads.html">Télécharger</a></li>
+        </ul>
+      </header>
+
+      <main class="page">
+        <header class="page-head">
+          <p class="eyebrow">Compte</p>
+          <h1>Un login pour le site et l’exe</h1>
+          <p>
+            Auth Supabase partagée avec RhosTool Windows. Créez un compte ici,
+            connectez-vous dans l’application — ou l’inverse.
+          </p>
+        </header>
+
+        <div class="split split-2">
+          <section class="panel stack" id="auth-guest">
+            <div>
+              <h2 style="font-family: var(--font-display); margin: 0 0 0.35rem">Connexion</h2>
+              <p class="muted" style="margin: 0">Email + mot de passe Supabase</p>
+            </div>
+            <form id="login-form" class="stack">
+              <label>
+                Email
+                <input id="login-email" type="email" autocomplete="username" required />
+              </label>
+              <label>
+                Mot de passe
+                <input
+                  id="login-password"
+                  type="password"
+                  autocomplete="current-password"
+                  required
+                  minlength="6"
+                />
+              </label>
+              <div class="form-actions">
+                <button class="btn btn-ink" type="submit">Se connecter</button>
+              </div>
+            </form>
+
+            <div>
+              <h2 style="font-family: var(--font-display); margin: 1rem 0 0.35rem">
+                Créer un compte
+              </h2>
+              <p class="muted" style="margin: 0">Profil + crédits initialisés à 0</p>
+            </div>
+            <form id="register-form" class="stack">
+              <label>
+                Nom d’utilisateur
+                <input id="register-username" type="text" autocomplete="nickname" />
+              </label>
+              <label>
+                Email
+                <input id="register-email" type="email" autocomplete="email" required />
+              </label>
+              <label>
+                Mot de passe
+                <input
+                  id="register-password"
+                  type="password"
+                  autocomplete="new-password"
+                  required
+                  minlength="6"
+                />
+              </label>
+              <div class="form-actions">
+                <button class="btn btn-primary" type="submit">Créer un compte</button>
+              </div>
+            </form>
+
+            <div>
+              <h2 style="font-family: var(--font-display); margin: 1rem 0 0.35rem">
+                Mot de passe oublié
+              </h2>
+            </div>
+            <form id="recover-form" class="stack">
+              <label>
+                Email
+                <input id="recover-email" type="email" autocomplete="email" required />
+              </label>
+              <div class="form-actions">
+                <button class="btn btn-line" type="submit">Envoyer le lien</button>
+              </div>
+            </form>
+          </section>
+
+          <section class="panel stack hidden" id="auth-user">
+            <div>
+              <h2 style="font-family: var(--font-display); margin: 0 0 0.35rem">Session active</h2>
+              <p class="muted" style="margin: 0">Synchronisée avec RhosTool.exe</p>
+            </div>
+            <div>
+              <div class="muted">Utilisateur</div>
+              <div id="user-username" style="font-weight: 600; font-size: 1.15rem"></div>
+              <div id="user-email" class="muted"></div>
+            </div>
+            <div class="credits-box">
+              <div class="muted">Crédits</div>
+              <strong id="user-credits">—</strong>
+            </div>
+            <div class="form-actions">
+              <button class="btn btn-line" type="button" id="refresh-btn">Actualiser</button>
+              <button class="btn btn-ink" type="button" id="logout-btn">Déconnexion</button>
+            </div>
+          </section>
+
+          <aside class="stack">
+            <div class="panel">
+              <p class="status" id="auth-status" aria-live="polite"></p>
+              <p class="note">
+                Même projet Supabase que l’app
+                (<code>hoczacluoagcncwohglw</code>. Collez la clé
+                <strong>anon</strong> dans
+                <code>web/assets/config.js</code> (identique à
+                <code>%AppData%\RhosTool\config.json</code>).
+              </p>
+            </div>
+            <div class="panel">
+              <h2 style="font-family: var(--font-display); margin: 0 0 0.5rem; font-size: 1.2rem">
+                Guide Supabase
+              </h2>
+              <p class="muted" style="margin: 0 0 1rem">
+                Création projet, table <code>profiles</code>, trigger crédits et config
+                locale.
+              </p>
+              <a
+                class="btn btn-line"
+                href="https://github.com/rhos-42/RhosTool/blob/main/docs/AUTH-SUPABASE.md"
+                >Ouvrir AUTH-SUPABASE.md</a
+              >
+            </div>
+          </aside>
+        </div>
+      </main>
+
+      <footer class="footer">
+        <span>Compte partagé site ↔ exe</span>
+        <a href="index.html">Retour à l’accueil</a>
+      </footer>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="assets/config.js"></script>
+    <script src="assets/auth.js"></script>
+  </body>
+</html>
