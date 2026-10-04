@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Téléchargements — RhosTool</title>
+    <meta
+      name="description"
+      content="Télécharger RhosTool Portable pour Windows. Binaire officiel uniquement — pas de redistribution UnlockTool."
+    />
+    <link rel="stylesheet" href="assets/app.css" />
+  </head>
+  <body data-page="downloads">
+    <div class="shell">
+      <header class="nav">
+        <a class="brand" href="index.html">Rhos<span>Tool</span></a>
+        <ul class="nav-links">
+          <li><a href="downloads.html" aria-current="page">Téléchargements</a></li>
+          <li><a href="account.html">Compte</a></li>
+          <li><a class="nav-cta" href="account.html">Compte</a></li>
+        </ul>
+      </header>
+
+      <main class="page">
+        <header class="page-head">
+          <p class="eyebrow">Téléchargements</p>
+          <h1>RhosTool Portable</h1>
+          <p>
+            ZIP single-file Windows (<code>RhosTool.exe</code>). Une seule instance à la
+            fois. Compte Supabase requis pour les crédits en ligne.
+          </p>
+        </header>
+
+        <section class="panel dl-main">
+          <h2>RhosTool-Portable.zip</h2>
+          <div class="dl-meta">
+            <span id="download-meta">RhosTool-Portable.zip · Windows · single-file</span>
+            <span>Source : GitHub Releases</span>
+          </div>
+          <div class="cta-row">
+            <a
+              class="btn btn-primary"
+              id="download-primary"
+              href="https://github.com/rhos-42/RhosTool/releases/latest/download/RhosTool-Portable.zip"
+              >Télécharger depuis GitHub</a
+            >
+            <a class="btn btn-line" id="download-fallback" href="public/downloads/RhosTool-Portable.zip"
+              >Miroir local (public/downloads)</a
+            >
+          </div>
+          <p class="note">
+            Ce site ne republie pas UnlockTool ni ses miroirs MediaFire / Drive / Mega.
+            Pour le catalogue officiel UnlockTool, voir
+            <a href="https://file.unlocktool.net/" rel="noopener noreferrer" target="_blank"
+              >file.unlocktool.net</a
+            >.
+          </p>
+        </section>
+
+        <section class="panel stack" style="margin-top: 1.25rem">
+          <h2 style="font-family: var(--font-display); margin: 0; font-size: 1.25rem">
+            Après installation
+          </h2>
+          <ol class="muted" style="margin: 0; padding-left: 1.2rem">
+            <li>Extrayez le ZIP et lancez <code>RhosTool.exe</code>.</li>
+            <li>
+              Configurez Supabase via <code>installer\link-supabase.ps1</code> ou
+              <code>%AppData%\RhosTool\config.json</code> (mêmes valeurs que
+              <code>web/assets/config.js</code>).
+            </li>
+            <li>Connectez-vous avec le compte créé sur cette page Compte.</li>
+          </ol>
+          <div class="form-actions">
+            <a class="btn btn-ink" href="account.html">Créer un compte</a>
+            <a
+              class="btn btn-line"
+              href="https://github.com/rhos-42/RhosTool/blob/main/docs/AUTH-SUPABASE.md"
+              >Guide Supabase</a
+            >
+          </div>
+        </section>
+      </main>
+
+      <footer class="footer">
+        <span>Binaire RhosTool uniquement</span>
+        <a href="https://github.com/rhos-42/RhosTool/releases" rel="noopener noreferrer" target="_blank"
+          >Toutes les releases</a
+        >
+      </footer>
+    </div>
+    <script src="assets/config.js"></script>
+    <script src="assets/auth.js"></script>
+  </body>
+</html>

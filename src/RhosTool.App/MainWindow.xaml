@@ -386,7 +386,7 @@
                 <UniformGrid Rows="1" Columns="5">
                   <Button Content="ADB" Style="{StaticResource UtilButton}" Margin="0,0,4,0" Command="{Binding CheckAdbCommand}" />
                   <Button Content="FAST&#x0a;BOOT" Style="{StaticResource UtilButton}" Margin="0,0,4,0" Command="{Binding RefreshNowCommand}" />
-                  <Button Content="T.POINT" Style="{StaticResource UtilButton}" Margin="0,0,4,0" Command="{Binding OpenConfigCommand}" />
+                  <Button Content="SITE" Style="{StaticResource UtilButton}" Margin="0,0,4,0" Command="{Binding OpenWebsiteCommand}" />
                   <Button Content="DEVMGR" Style="{StaticResource UtilButton}" Margin="0,0,4,0" Command="{Binding OpenDeviceManagerCommand}" />
                   <Button Content="CONFIG" Style="{StaticResource UtilButton}" Margin="0" Command="{Binding OpenConfigCommand}" />
                 </UniformGrid>

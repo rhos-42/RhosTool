@@ -21,6 +21,17 @@ Voir le guide : [docs/AUTH-SUPABASE.md](docs/AUTH-SUPABASE.md)
 
 Config locale : `%AppData%\RhosTool\config.json`
 
+## Site web
+
+Dossier [`web/`](web/) : accueil, compte (même Supabase que l’exe) et téléchargement de **RhosTool-Portable.zip**.
+
+```bash
+python3 -m http.server 8080
+# → http://localhost:8080/web/
+```
+
+Collez la clé anon dans `web/assets/config.js` (identiques à `config.json`).
+
 ## Prérequis
 
 - Windows 10/11
@@ -52,8 +63,10 @@ dotnet run --project .\src\RhosTool.App\RhosTool.App.csproj -c Release
 RhosTool.sln
 src/RhosTool.App/     # UI WPF
 src/RhosTool.Core/    # ADB, iOS, modules, logs
+web/                  # site (compte Supabase + téléchargement)
 tools/platform-tools/ # adb (généré par le script)
 installer/            # scripts setup / run
+docs/                 # AUTH-SUPABASE, etc.
 ```
 
 ## iOS (optionnel)
