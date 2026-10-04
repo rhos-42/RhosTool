@@ -71,17 +71,25 @@
     return data || { username: null, credits: 0 };
   }
 
+  function showPanel(ui, mode) {
+    ui.guest?.classList.toggle("hidden", mode !== "guest");
+    ui.user?.classList.toggle("hidden", mode !== "user");
+    ui.recovery?.classList.toggle("hidden", mode !== "recovery");
+  }
+
   function renderSignedOut(ui) {
-    ui.guest?.classList.remove("hidden");
-    ui.user?.classList.add("hidden");
+    showPanel(ui, "guest");
     if (ui.credits) ui.credits.textContent = "—";
     if (ui.email) ui.email.textContent = "";
     if (ui.username) ui.username.textContent = "";
   }
 
+  function renderRecovery(ui) {
+    showPanel(ui, "recovery");
+  }
+
   async function renderSignedIn(client, ui, session) {
-    ui.guest?.classList.add("hidden");
-    ui.user?.classList.remove("hidden");
+    showPanel(ui, "user");
     const email = session.user?.email || "—";
     if (ui.email) ui.email.textContent = email;
     try {
@@ -109,6 +117,7 @@
     const ui = {
       guest: $("auth-guest"),
       user: $("auth-user"),
+      recovery: $("auth-recovery"),
       status: $("auth-status"),
       email: $("user-email"),
       username: $("user-username"),
@@ -116,6 +125,7 @@
       loginForm: $("login-form"),
       registerForm: $("register-form"),
       recoverForm: $("recover-form"),
+      newPasswordForm: $("new-password-form"),
       logoutBtn: $("logout-btn"),
       refreshBtn: $("refresh-btn"),
     };
@@ -147,7 +157,12 @@
       renderSignedOut(ui);
     }
 
-    client.auth.onAuthStateChange(async (_event, next) => {
+    client.auth.onAuthStateChange(async (event, next) => {
+      if (event === "PASSWORD_RECOVERY") {
+        renderRecovery(ui);
+        setStatus(ui.status, "Définissez un nouveau mot de passe.", "ok");
+        return;
+      }
       if (next) {
         await renderSignedIn(client, ui, next);
       } else {
@@ -204,13 +219,43 @@
       const email = $("recover-email")?.value?.trim() || "";
       setStatus(ui.status, "Envoi du mail de réinitialisation…");
       const { error } = await client.auth.resetPasswordForEmail(email, {
-        redirectTo: window.location.href,
+        redirectTo: window.location.href.split("#")[0],
       });
       if (error) {
         setStatus(ui.status, error.message || "Échec récupération.", "err");
         return;
       }
       setStatus(ui.status, "Email de réinitialisation envoyé (si le compte existe).", "ok");
+    });
+
+    ui.newPasswordForm?.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const password = $("new-password")?.value || "";
+      const confirm = $("new-password-confirm")?.value || "";
+      if (password.length < 6) {
+        setStatus(ui.status, "Mot de passe : 6 caractères minimum.", "err");
+        return;
+      }
+      if (password !== confirm) {
+        setStatus(ui.status, "Les mots de passe ne correspondent pas.", "err");
+        return;
+      }
+      setStatus(ui.status, "Mise à jour du mot de passe…");
+      const { data, error } = await client.auth.updateUser({ password });
+      if (error) {
+        setStatus(ui.status, error.message || "Échec mise à jour.", "err");
+        return;
+      }
+      const {
+        data: { session },
+      } = await client.auth.getSession();
+      if (session) {
+        await renderSignedIn(client, ui, session);
+      } else if (data?.user) {
+        showPanel(ui, "guest");
+      }
+      setStatus(ui.status, "Mot de passe mis à jour. Vous pouvez utiliser l’exe avec ce compte.", "ok");
+      if (ui.newPasswordForm) ui.newPasswordForm.reset();
     });
 
     ui.logoutBtn?.addEventListener("click", async () => {

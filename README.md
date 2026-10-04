@@ -26,7 +26,7 @@ Config locale : `%AppData%\RhosTool\config.json`
 Dossier [`web/`](web/) : accueil, compte (même Supabase que l’exe) et téléchargement de **RhosTool-Portable.zip**.
 
 ```bash
-python -m http.server 8080
+python3 -m http.server 8080
 # → http://localhost:8080/web/
 ```
 

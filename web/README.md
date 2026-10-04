@@ -21,7 +21,7 @@ Ne jamais y mettre `service_role`.
 Depuis la racine du dépôt (pour que le lien vers `docs/AUTH-SUPABASE.md` fonctionne) :
 
 ```bash
-python -m http.server 8080
+python3 -m http.server 8080
 ```
 
 Puis ouvrez `http://localhost:8080/web/`.

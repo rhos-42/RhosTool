@@ -465,7 +465,33 @@ input:focus {
     display: none;
   }
 
+  .hero {
+    align-items: center;
+    min-height: calc(100svh - var(--nav-h));
+  }
+
+  .hero-copy {
+    padding-top: 2rem;
+    padding-bottom: 2.5rem;
+  }
+
   .hero-brand {
     font-size: clamp(2.6rem, 16vw, 3.6rem);
+  }
+
+  .hero h1 {
+    max-width: none;
+  }
+
+  .hero p {
+    max-width: none;
+  }
+
+  .page {
+    padding-top: 1.5rem;
+  }
+
+  .split-2 {
+    grid-template-columns: 1fr;
   }
 }

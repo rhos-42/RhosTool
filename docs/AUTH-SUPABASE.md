@@ -17,6 +17,8 @@ Téléchargement du binaire : page [`web/downloads.html`](../web/downloads.html)
 
 Dans l’exe : bouton **SITE** ou **CONFIG** → *Ouvrir le site* (`https://rhos-42.github.io/RhosTool/`).
 
+Pour la récupération de mot de passe depuis le site, ajoutez l’URL de `web/account.html` (locale ou Pages) dans Supabase → **Authentication** → **URL Configuration** → **Redirect URLs**.
+
 ## 1. Créer le projet
 
 1. Allez sur [https://supabase.com](https://supabase.com) et créez un compte (gratuit).

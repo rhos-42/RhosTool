@@ -123,6 +123,42 @@
             </div>
           </section>
 
+          <section class="panel stack hidden" id="auth-recovery">
+            <div>
+              <h2 style="font-family: var(--font-display); margin: 0 0 0.35rem">
+                Nouveau mot de passe
+              </h2>
+              <p class="muted" style="margin: 0">
+                Lien de réinitialisation validé — choisissez un mot de passe (6 caractères min.).
+              </p>
+            </div>
+            <form id="new-password-form" class="stack">
+              <label>
+                Nouveau mot de passe
+                <input
+                  id="new-password"
+                  type="password"
+                  autocomplete="new-password"
+                  required
+                  minlength="6"
+                />
+              </label>
+              <label>
+                Confirmer
+                <input
+                  id="new-password-confirm"
+                  type="password"
+                  autocomplete="new-password"
+                  required
+                  minlength="6"
+                />
+              </label>
+              <div class="form-actions">
+                <button class="btn btn-primary" type="submit">Enregistrer</button>
+              </div>
+            </form>
+          </section>
+
           <aside class="stack">
             <div class="panel">
               <p class="status" id="auth-status" aria-live="polite"></p>
