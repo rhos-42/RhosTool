@@ -105,7 +105,13 @@ public static class BrandCatalog
             Op("drivers", "USB DRIVERS", "Gestionnaire de périphériques.", OperationKind.OpenDeviceManager, false)),
         AdbToolsTab(),
         MtpFilesTab(),
-        AppControlTab()
+        AppControlTab(),
+        AllDriverTab(),
+        RamdiskA12A13Tab(),
+        RamdiskIphoneTab(),
+        RamdiskIpadTab(),
+        ToolAndroidPcTab(),
+        ResourcesTab()
     };
 
     // --- Xiaomi ---
@@ -141,7 +147,13 @@ public static class BrandCatalog
             Op("drivers", "USB DRIVERS", "Gestionnaire de périphériques.", OperationKind.OpenDeviceManager, false)),
         AdbToolsTab(),
         MtpFilesTab(),
-        AppControlTab()
+        AppControlTab(),
+        AllDriverTab(),
+        RamdiskA12A13Tab(),
+        RamdiskIphoneTab(),
+        RamdiskIpadTab(),
+        ToolAndroidPcTab(),
+        ResourcesTab()
     };
 
     // --- MTK-heavy brands (Tecno / Infinix / Itel) ---
@@ -176,7 +188,13 @@ public static class BrandCatalog
             Op("drivers", "USB DRIVERS", "Gestionnaire de périphériques.", OperationKind.OpenDeviceManager, false)),
         AdbToolsTab(),
         MtpFilesTab(),
-        AppControlTab()
+        AppControlTab(),
+        AllDriverTab(),
+        RamdiskA12A13Tab(),
+        RamdiskIphoneTab(),
+        RamdiskIpadTab(),
+        ToolAndroidPcTab(),
+        ResourcesTab()
     };
 
     private static IReadOnlyList<FunctionTab> OppoFamilyTabs(string brand) => new[]
@@ -207,7 +225,13 @@ public static class BrandCatalog
             Op("drivers", "USB DRIVERS", "Gestionnaire de périphériques.", OperationKind.OpenDeviceManager, false)),
         AdbToolsTab(),
         MtpFilesTab(),
-        AppControlTab()
+        AppControlTab(),
+        AllDriverTab(),
+        RamdiskA12A13Tab(),
+        RamdiskIphoneTab(),
+        RamdiskIpadTab(),
+        ToolAndroidPcTab(),
+        ResourcesTab()
     };
 
     private static IReadOnlyList<FunctionTab> GenericAndroidTabs(string brand) => new[]
@@ -238,7 +262,13 @@ public static class BrandCatalog
             Op("drivers", "USB DRIVERS", "Gestionnaire de périphériques.", OperationKind.OpenDeviceManager, false)),
         AdbToolsTab(),
         MtpFilesTab(),
-        AppControlTab()
+        AppControlTab(),
+        AllDriverTab(),
+        RamdiskA12A13Tab(),
+        RamdiskIphoneTab(),
+        RamdiskIpadTab(),
+        ToolAndroidPcTab(),
+        ResourcesTab()
     };
 
     private static IReadOnlyList<FunctionTab> QualcommTabs() => new[]
@@ -256,7 +286,13 @@ public static class BrandCatalog
             Op("drivers", "USB DRIVERS", "Gestionnaire de périphériques.", OperationKind.OpenDeviceManager, false)),
         AdbToolsTab(),
         MtpFilesTab(),
-        AppControlTab()
+        AppControlTab(),
+        AllDriverTab(),
+        RamdiskA12A13Tab(),
+        RamdiskIphoneTab(),
+        RamdiskIpadTab(),
+        ToolAndroidPcTab(),
+        ResourcesTab()
     };
 
     private static IReadOnlyList<FunctionTab> MtkPlatformTabs() => new[]
@@ -286,7 +322,13 @@ public static class BrandCatalog
             Op("drivers", "USB DRIVERS", "Gestionnaire de périphériques.", OperationKind.OpenDeviceManager, false)),
         AdbToolsTab(),
         MtpFilesTab(),
-        AppControlTab()
+        AppControlTab(),
+        AllDriverTab(),
+        RamdiskA12A13Tab(),
+        RamdiskIphoneTab(),
+        RamdiskIpadTab(),
+        ToolAndroidPcTab(),
+        ResourcesTab()
     };
 
     private static IReadOnlyList<FunctionTab> AppleTabs() => new[]
@@ -303,8 +345,82 @@ public static class BrandCatalog
             Op("icloud", "ICLOUD / ACTIVATION", "Module partenaire (FRP/bypass/NV/flash bas niveau) — non exécuté en local.", OperationKind.PartnerStub),
             Op("mdm", "MDM", "Module partenaire (FRP/bypass/NV/flash bas niveau) — non exécuté en local.", OperationKind.PartnerStub),
             Op("network", "NETWORK UNLOCK", "Module partenaire (FRP/bypass/NV/flash bas niveau) — non exécuté en local.", OperationKind.PartnerStub),
-            Op("drivers", "USB DRIVERS", "Gestionnaire de périphériques.", OperationKind.OpenDeviceManager, false))
+            Op("drivers", "USB DRIVERS", "Gestionnaire de périphériques.", OperationKind.OpenDeviceManager, false)),
+        AllDriverTab(),
+        RamdiskA12A13Tab(),
+        RamdiskIphoneTab(),
+        RamdiskIpadTab(),
+        ToolAndroidPcTab(),
+        ResourcesTab()
     };
+
+    /// <summary>Ressources téléchargeables (URLs à renseigner dans resource-links.json).</summary>
+    private static FunctionTab ResourcesTab() => Tab("resources", "RESOURCES",
+        Op("res-diag-iphone-ipad", "DIAG IPHONE - IPAD", "Ouvre le lieu MediaFire (dossier catégorie).", OperationKind.OpenResourceLink, false),
+        Op("res-all-ramdisk-iphone", "ALL RAMDISK IPHONE", "Ouvre le lieu MediaFire (dossier catégorie).", OperationKind.OpenResourceLink, false),
+        Op("res-all-ramdisk-ipad", "ALL RAMDISK IPAD", "Ouvre le lieu MediaFire (dossier catégorie).", OperationKind.OpenResourceLink, false));
+
+    private static FunctionTab ToolAndroidPcTab() => Tab("tool-android-pc", "TOOL ANDROID-PC",
+        Op("tool-pc", "TOOL PC", "Ouvre le lieu MediaFire (dossier catégorie).", OperationKind.OpenResourceLink, false),
+        Op("tool-winra1n", "WINRA1N 2.1", "Ouvre le lieu MediaFire (dossier catégorie).", OperationKind.OpenResourceLink, false));
+
+    private static FunctionTab RamdiskIpadTab() => Tab("ramdisk-ipad", "RAMDISK IPAD",
+        Op("rd-ipad-5", "IPAD 5", "Ouvre le lieu MediaFire (dossier catégorie).", OperationKind.OpenResourceLink, false),
+        Op("rd-ipad-6", "IPAD 6", "Ouvre le lieu MediaFire (dossier catégorie).", OperationKind.OpenResourceLink, false),
+        Op("rd-ipad-7", "IPAD 7", "Ouvre le lieu MediaFire (dossier catégorie).", OperationKind.OpenResourceLink, false),
+        Op("rd-ipad-air-2", "IPAD AIR 2", "Ouvre le lieu MediaFire (dossier catégorie).", OperationKind.OpenResourceLink, false),
+        Op("rd-ipad-mini-4", "IPAD MINI 4", "Ouvre le lieu MediaFire (dossier catégorie).", OperationKind.OpenResourceLink, false),
+        Op("rd-ipad-pro-105", "IPAD PRO 10.5", "Ouvre le lieu MediaFire (dossier catégorie).", OperationKind.OpenResourceLink, false),
+        Op("rd-ipad-pro-129-g1", "IPAD PRO 12.9 G1", "Ouvre le lieu MediaFire (dossier catégorie).", OperationKind.OpenResourceLink, false),
+        Op("rd-ipad-pro-129-g2", "IPAD PRO 12.9 G2", "Ouvre le lieu MediaFire (dossier catégorie).", OperationKind.OpenResourceLink, false),
+        Op("rd-ipad-pro-97", "IPAD PRO 9.7", "Ouvre le lieu MediaFire (dossier catégorie).", OperationKind.OpenResourceLink, false));
+
+    private static FunctionTab RamdiskIphoneTab() => Tab("ramdisk-iphone", "RAMDISK IPHONE",
+        Op("rd-iphone-5se", "IPHONE 5SE", "Ouvre le lieu MediaFire (dossier catégorie).", OperationKind.OpenResourceLink, false),
+        Op("rd-iphone-6g", "IPHONE 6G", "Ouvre le lieu MediaFire (dossier catégorie).", OperationKind.OpenResourceLink, false),
+        Op("rd-iphone-6-plus", "IPHONE 6 PLUS", "Ouvre le lieu MediaFire (dossier catégorie).", OperationKind.OpenResourceLink, false),
+        Op("rd-iphone-6s", "IPHONE 6S", "Ouvre le lieu MediaFire (dossier catégorie).", OperationKind.OpenResourceLink, false),
+        Op("rd-iphone-6s-plus", "IPHONE 6S PLUS", "Ouvre le lieu MediaFire (dossier catégorie).", OperationKind.OpenResourceLink, false),
+        Op("rd-iphone-7g", "IPHONE 7G", "Ouvre le lieu MediaFire (dossier catégorie).", OperationKind.OpenResourceLink, false),
+        Op("rd-iphone-7-plus", "IPHONE 7 PLUS", "Ouvre le lieu MediaFire (dossier catégorie).", OperationKind.OpenResourceLink, false),
+        Op("rd-iphone-8g", "IPHONE 8G", "Ouvre le lieu MediaFire (dossier catégorie).", OperationKind.OpenResourceLink, false),
+        Op("rd-iphone-8-plus", "IPHONE 8 PLUS", "Ouvre le lieu MediaFire (dossier catégorie).", OperationKind.OpenResourceLink, false),
+        Op("rd-iphone-x", "IPHONE X", "Ouvre le lieu MediaFire (dossier catégorie).", OperationKind.OpenResourceLink, false));
+
+    private static FunctionTab RamdiskA12A13Tab() => Tab("ramdisk-a12", "RAMDISK A12-A13",
+        Op("rd-a12-iphone-xr", "IPHONE XR", "Ouvre le lieu MediaFire (dossier catégorie).", OperationKind.OpenResourceLink, false),
+        Op("rd-a12-iphone-xs", "IPHONE XS", "Ouvre le lieu MediaFire (dossier catégorie).", OperationKind.OpenResourceLink, false),
+        Op("rd-a12-iphone-xs-max", "IPHONE XS MAX", "Ouvre le lieu MediaFire (dossier catégorie).", OperationKind.OpenResourceLink, false),
+        Op("rd-a12-iphone-11", "IPHONE 11", "Ouvre le lieu MediaFire (dossier catégorie).", OperationKind.OpenResourceLink, false),
+        Op("rd-a12-iphone-11-pro", "IPHONE 11 PRO", "Ouvre le lieu MediaFire (dossier catégorie).", OperationKind.OpenResourceLink, false),
+        Op("rd-a12-iphone-11-pro-max", "IPHONE 11 PRO MAX", "Ouvre le lieu MediaFire (dossier catégorie).", OperationKind.OpenResourceLink, false),
+        Op("rd-a12-iphone-se-2020", "IPHONE SE 2020", "Ouvre le lieu MediaFire (dossier catégorie).", OperationKind.OpenResourceLink, false),
+        Op("rd-a12-ipad-8", "IPAD 8", "Ouvre le lieu MediaFire (dossier catégorie).", OperationKind.OpenResourceLink, false),
+        Op("rd-a12-ipad-9", "IPAD 9", "Ouvre le lieu MediaFire (dossier catégorie).", OperationKind.OpenResourceLink, false),
+        Op("rd-a12-ipad-air-3", "IPAD AIR 3", "Ouvre le lieu MediaFire (dossier catégorie).", OperationKind.OpenResourceLink, false),
+        Op("rd-a12-ipad-mini-5", "IPAD MINI 5", "Ouvre le lieu MediaFire (dossier catégorie).", OperationKind.OpenResourceLink, false));
+
+    private static FunctionTab AllDriverTab() => Tab("alldriver", "ALL DRIVER",
+        Op("drv-all-mobile", "ALL DRIVER MOBILE", "Ouvre le lieu MediaFire (dossier catégorie).", OperationKind.OpenResourceLink, false),
+        Op("drv-cert-fix", "CERT-FIX.zip", "Ouvre le lieu MediaFire (dossier catégorie).", OperationKind.OpenResourceLink, false),
+        Op("drv-apple-usb", "DRIVER APPLE USB", "Ouvre le lieu MediaFire (dossier catégorie).", OperationKind.OpenResourceLink, false),
+        Op("drv-huawei-kirin", "DRIVER HUAWEI KIRIN", "Ouvre le lieu MediaFire (dossier catégorie).", OperationKind.OpenResourceLink, false),
+        Op("drv-huawei-usb10", "DRIVER HUAWEI USB1.0", "Ouvre le lieu MediaFire (dossier catégorie).", OperationKind.OpenResourceLink, false),
+        Op("drv-libusb-filter", "DRIVER LIBUSB FILTER", "Ouvre le lieu MediaFire (dossier catégorie).", OperationKind.OpenResourceLink, false),
+        Op("drv-nokia-mtk", "DRIVER NOKIA MTK", "Ouvre le lieu MediaFire (dossier catégorie).", OperationKind.OpenResourceLink, false),
+        Op("drv-nokia-full", "DRIVER NOKIA FULL", "Ouvre le lieu MediaFire (dossier catégorie).", OperationKind.OpenResourceLink, false),
+        Op("drv-qc-mtk", "DRIVER QC + MTK", "Ouvre le lieu MediaFire (dossier catégorie).", OperationKind.OpenResourceLink, false),
+        Op("drv-qc-mtk-mf", "DRIVER QC + MTK (MF)", "Ouvre le lieu MediaFire (dossier catégorie).", OperationKind.OpenResourceLink, false),
+        Op("drv-spd-77xx", "DRIVER SPD 77XX", "Ouvre le lieu MediaFire (dossier catégorie).", OperationKind.OpenResourceLink, false),
+        Op("drv-spd-77xx-mf", "DRIVER SPD 77XX (MF)", "Ouvre le lieu MediaFire (dossier catégorie).", OperationKind.OpenResourceLink, false),
+        Op("drv-sprd-npi", "DRIVER SPRD NPI", "Ouvre le lieu MediaFire (dossier catégorie).", OperationKind.OpenResourceLink, false),
+        Op("drv-installer-pack", "DRIVER INSTALL PACK", "Ouvre le lieu MediaFire (dossier catégorie).", OperationKind.OpenResourceLink, false),
+        Op("drv-installer-alt", "DRIVER INSTALLER PACK", "Ouvre le lieu MediaFire (dossier catégorie).", OperationKind.OpenResourceLink, false),
+        Op("drv-fix-mtk-com", "FIX DRIVER MTK COM", "Ouvre le lieu MediaFire (dossier catégorie).", OperationKind.OpenResourceLink, false),
+        Op("drv-fix-mtk-com-mf", "FIX DRIVER MTK COM (MF)", "Ouvre le lieu MediaFire (dossier catégorie).", OperationKind.OpenResourceLink, false),
+        Op("drv-fix-qc", "FIX DRIVER QUALCOMM", "Ouvre le lieu MediaFire (dossier catégorie).", OperationKind.OpenResourceLink, false),
+        Op("drv-winra1n", "WINRA1N 2.1", "Ouvre le lieu MediaFire (dossier catégorie).", OperationKind.OpenResourceLink, false),
+        Op("drv-vcredist-2015", "VCREDIST 2015", "Ouvre le lieu MediaFire (dossier catégorie).", OperationKind.OpenResourceLink, false));
 
     private static DeviceOperation[] PackOps() => new[]
     {
@@ -373,13 +489,61 @@ public static class BrandCatalog
         string title,
         string description,
         OperationKind kind,
-        bool requiresDevice = true) =>
-        new()
+        bool requiresDevice = true)
+    {
+        var mode = ResolveRequiredMode(id, kind, requiresDevice);
+        return new()
         {
             Id = id,
             Title = title,
             Description = description,
             Kind = kind,
-            RequiresDevice = requiresDevice
+            RequiresDevice = requiresDevice && mode is not DeviceRequiredMode.None
+                                            and not DeviceRequiredMode.Unavailable,
+            RequiredMode = mode
         };
+    }
+
+    private static DeviceRequiredMode ResolveRequiredMode(
+        string id,
+        OperationKind kind,
+        bool requiresDevice)
+    {
+        if (kind == OperationKind.PartnerStub)
+            return DeviceRequiredMode.Unavailable;
+
+        if (kind is OperationKind.OpenDeviceManager or OperationKind.FirmwarePack
+            or OperationKind.OpenResourceLink)
+            return DeviceRequiredMode.None;
+
+        if (kind == OperationKind.MtpFiles)
+        {
+            return id == "mtp-devices"
+                ? DeviceRequiredMode.None
+                : DeviceRequiredMode.Mtp;
+        }
+
+        if (id is "fastboot-devices" or "fb-unlock-status")
+            return DeviceRequiredMode.Fastboot;
+
+        if (id is "enter-dl" or "edl" or "edl-brom" or "force-brom"
+            or "mtk-preloader" or "mtk-meta" or "drivers"
+            or "enable-adb" or "adb-status" or "adb-devices"
+            or "adb-wait" or "adb-connect" or "adb-disconnect"
+            or "flash" or "flash-back")
+            return DeviceRequiredMode.None;
+
+        if (!requiresDevice)
+            return DeviceRequiredMode.None;
+
+        if (kind is OperationKind.Reboot or OperationKind.RebootRecovery)
+            return DeviceRequiredMode.AdbTransport;
+
+        if (id is "boot-device" or "reboot" or "reboot-rec" or "reboot-fb"
+            or "adb-reboot" or "adb-reboot-recovery" or "adb-reboot-bootloader"
+            or "adb-sideload" or "adb-state")
+            return DeviceRequiredMode.AdbTransport;
+
+        return DeviceRequiredMode.AdbDevice;
+    }
 }

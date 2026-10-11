@@ -101,6 +101,7 @@ public partial class MainViewModel : ObservableObject
     [ObservableProperty] private string modelFilter = string.Empty;
     [ObservableProperty] private DeviceInfo? connectedDevice;
     [ObservableProperty] private string usbStatus = "- Waiting for devices -";
+    [ObservableProperty] private string connectionModeText = "Mode: —";
     [ObservableProperty] private string selectedComPort = "AUTO";
     [ObservableProperty] private bool fastConnect = true;
     [ObservableProperty] private string selectedChip = "AUTO";
@@ -115,6 +116,9 @@ public partial class MainViewModel : ObservableObject
     [ObservableProperty] private double progressValue = 100;
     [ObservableProperty] private string progressText = "100%";
     [ObservableProperty] private Brush connectionBrush = MakeBrush(0xFF, 0x98, 0x00);
+
+    private string? _fastbootSerial;
+    private int _mtpCount;
 
     [ObservableProperty] private string lastPackageName = "com.android.settings";
     [ObservableProperty] private string packStatusText = "Pack: —";
@@ -285,13 +289,36 @@ public partial class MainViewModel : ObservableObject
         {
             var android = _adb.IsAvailable ? await _adb.GetDevicesAsync(ct) : Array.Empty<DeviceInfo>();
             var ios = await _ios.GetDevicesAsync(ct);
+            var fbSerials = _fastboot.IsAvailable
+                ? await _fastboot.GetSerialsAsync(ct)
+                : Array.Empty<string>();
+            _fastbootSerial = fbSerials.FirstOrDefault();
+            _mtpCount = _mtp.CountDevices();
+
             var all = android.Concat(ios).ToList();
 
-            if (all.Count == 0)
+            if (_fastbootSerial is not null && all.Count == 0)
             {
                 ConnectedDevice = null;
-                UsbStatus = "- Waiting for devices -";
-                ConnectionBrush = MakeBrush(0xFF, 0x98, 0x00);
+                UsbStatus = $"Fastboot [{_fastbootSerial}]";
+                ConnectionModeText = "Mode: FASTBOOT";
+                ConnectionBrush = MakeBrush(0x1E, 0x88, 0xE5);
+            }
+            else if (all.Count == 0)
+            {
+                ConnectedDevice = null;
+                if (_mtpCount > 0)
+                {
+                    UsbStatus = $"MTP ({_mtpCount}) — pas d'ADB";
+                    ConnectionModeText = "Mode: MTP";
+                    ConnectionBrush = MakeBrush(0xFB, 0x8C, 0x00);
+                }
+                else
+                {
+                    UsbStatus = "- Waiting for devices -";
+                    ConnectionModeText = "Mode: —";
+                    ConnectionBrush = MakeBrush(0xFF, 0x98, 0x00);
+                }
             }
             else
             {
@@ -299,8 +326,13 @@ public partial class MainViewModel : ObservableObject
                     ? all.FirstOrDefault(d => d.Platform == DevicePlatform.Ios) ?? all[0]
                     : all.FirstOrDefault(d => d.Platform == DevicePlatform.Android) ?? all[0];
                 ConnectedDevice = preferred;
-                UsbStatus = $"{preferred.DisplayName} [{preferred.Serial}]";
-                ConnectionBrush = preferred.IsAuthorized
+                var state = preferred.State;
+                UsbStatus = $"{preferred.DisplayName} [{preferred.Serial}] ({state})";
+                ConnectionModeText = preferred.Platform == DevicePlatform.Ios
+                    ? "Mode: iOS"
+                    : $"Mode: ADB/{state}";
+                ConnectionBrush = preferred.IsAuthorized ||
+                                  state is "recovery" or "sideload"
                     ? MakeBrush(0x43, 0xA0, 0x47)
                     : MakeBrush(0xE5, 0x39, 0x35);
             }
@@ -313,6 +345,58 @@ public partial class MainViewModel : ObservableObject
         finally
         {
             _polling = false;
+        }
+    }
+
+    private string? ValidateOperationGate(DeviceOperation operation)
+    {
+        switch (operation.RequiredMode)
+        {
+            case DeviceRequiredMode.Unavailable:
+                return $"ÉCHEC — {operation.Title} : module partenaire non disponible en local.";
+
+            case DeviceRequiredMode.None:
+                return null;
+
+            case DeviceRequiredMode.AdbDevice:
+                if (ConnectedDevice is null)
+                    return "ÉCHEC — aucun appareil ADB. Branchez le téléphone (débogage USB ON).";
+                if (ConnectedDevice.Platform != DevicePlatform.Android)
+                    return "ÉCHEC — opération Android ADB uniquement.";
+                if (!ConnectedDevice.IsAuthorized ||
+                    !ConnectedDevice.State.Equals("device", StringComparison.OrdinalIgnoreCase))
+                {
+                    return $"ÉCHEC — appareil en mode « {ConnectedDevice.State} ». " +
+                           "Autorisez le débogage USB (state=device) pour cette opération.";
+                }
+
+                return null;
+
+            case DeviceRequiredMode.AdbTransport:
+                if (ConnectedDevice is null)
+                    return "ÉCHEC — aucun appareil ADB (device/recovery/sideload).";
+                if (ConnectedDevice.Platform != DevicePlatform.Android)
+                    return "ÉCHEC — opération Android ADB uniquement.";
+                if (ConnectedDevice.State is not ("device" or "recovery" or "sideload"))
+                {
+                    return $"ÉCHEC — mode « {ConnectedDevice.State} » incompatible. " +
+                           "Attendu : device, recovery ou sideload.";
+                }
+
+                return null;
+
+            case DeviceRequiredMode.Fastboot:
+                if (string.IsNullOrWhiteSpace(_fastbootSerial))
+                    return "ÉCHEC — aucun appareil fastboot. REBOOT BOOTLOADER puis reconnectez.";
+                return null;
+
+            case DeviceRequiredMode.Mtp:
+                if (_mtpCount <= 0)
+                    return "ÉCHEC — aucun appareil MTP. Mode « Transfert de fichiers » requis.";
+                return null;
+
+            default:
+                return null;
         }
     }
 
@@ -371,51 +455,81 @@ public partial class MainViewModel : ObservableObject
         IsBusy = true;
         _opCts = new CancellationTokenSource();
         ProgressValue = 0;
-        ProgressText = "0%";
+        ProgressText = "…";
 
         try
         {
-            var model = SelectedModel?.DisplayName ?? "Generic";
-            _log.Info($">>> {operation.Title} | {model} | Chip={SelectedChip} | COM={SelectedComPort}");
+            await PollDevicesAsync();
 
-            for (var i = 10; i <= 90; i += 20)
+            var gate = ValidateOperationGate(operation);
+            if (gate is not null)
             {
-                if (_opCts.IsCancellationRequested) break;
-                ProgressValue = i;
-                ProgressText = $"{i}%";
-                await Task.Delay(80, _opCts.Token);
-            }
-
-            if (_opCts.IsCancellationRequested)
-            {
-                _log.Warn("Operation cancelled.");
-                ProgressText = "STOP";
+                _log.Error(gate);
+                ProgressValue = 0;
+                ProgressText = "FAIL";
                 return;
             }
 
-            string result;
-            if (operation.Kind == OperationKind.MtpFiles)
+            var model = SelectedModel?.DisplayName ?? "Generic";
+            var mode = ConnectionModeText;
+            _log.Info($">>> {operation.Title} | {model} | {mode} | Chip={SelectedChip}");
+
+            ProgressValue = 30;
+            ProgressText = "RUN";
+
+            OperationResult outcome;
+            if (operation.Kind == OperationKind.OpenResourceLink)
             {
-                result = await _mtp.RunAsync(operation.Id, userInput, _opCts.Token);
+                outcome = OpenResourceLinkInteractive(operation);
+            }
+            else if (operation.Kind == OperationKind.MtpFiles)
+            {
+                outcome = await _mtp.RunAsync(operation.Id, userInput, _opCts.Token);
             }
             else
             {
-                result = await _runner.RunAsync(operation, ConnectedDevice, userInput, _opCts.Token);
+                outcome = await _runner.RunAsync(operation, ConnectedDevice, userInput, _opCts.Token);
             }
-
-            ProgressValue = 100;
-            ProgressText = "100%";
 
             if (operation.Kind == OperationKind.FirmwarePack)
             {
                 ApplyPackUi(_runner.LastPackManifest);
             }
 
-            // Listes packages : journaliser ligne par ligne (tronqué)
+            var result = outcome.Message ?? "";
+            var isGuide = result.StartsWith("GUIDE", StringComparison.OrdinalIgnoreCase);
+
+            if (!outcome.Ok)
+            {
+                ProgressValue = 0;
+                ProgressText = "FAIL";
+                foreach (var line in result.Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).Take(40))
+                {
+                    _log.Error(line);
+                }
+
+                return;
+            }
+
+            if (isGuide)
+            {
+                ProgressValue = 100;
+                ProgressText = "INFO";
+                foreach (var line in result.Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).Take(40))
+                {
+                    _log.Info(line);
+                }
+
+                return;
+            }
+
+            ProgressValue = 100;
+            ProgressText = "OK";
+
             if (operation.Id is "list-pkgs" or "list-3rd")
             {
                 var lines = result.Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-                _log.Success($"{lines.Length} package(s)");
+                _log.Success($"OK — {lines.Length} package(s)");
                 foreach (var line in lines.Take(80))
                 {
                     _log.Info(line);
@@ -423,14 +537,15 @@ public partial class MainViewModel : ObservableObject
 
                 if (lines.Length > 80)
                 {
-                    _log.Warn($"… +{lines.Length - 80} autres (voir sortie complète dans le journal tronqué)");
+                    _log.Warn($"… +{lines.Length - 80} autres");
                 }
             }
             else
             {
+                _log.Success($"OK — {operation.Title}");
                 foreach (var line in result.Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).Take(40))
                 {
-                    _log.Success(line);
+                    _log.Info(line);
                 }
             }
 
@@ -444,12 +559,43 @@ public partial class MainViewModel : ObservableObject
         catch (Exception ex)
         {
             _log.Error(ex.Message);
-            ProgressText = "ERR";
+            ProgressText = "FAIL";
+            ProgressValue = 0;
         }
         finally
         {
             IsBusy = false;
         }
+    }
+
+    private OperationResult OpenResourceLinkInteractive(DeviceOperation operation)
+    {
+        ResourceLinkStore.EnsureFile();
+        var err = ResourceLinkStore.TryOpen(operation.Id);
+
+        if (err == "EMPTY")
+        {
+            var owner = Application.Current?.MainWindow;
+            var pasted = InputDialog.Prompt(
+                owner!,
+                "Lien MediaFire",
+                $"Collez le lien MediaFire (direct ou partage) pour :\n{operation.Title}",
+                ResourceLinkStore.GetUrl(operation.Id));
+
+            if (string.IsNullOrWhiteSpace(pasted))
+                return OperationResult.Fail("Annulé — aucun lien collé.");
+
+            ResourceLinkStore.SetUrl(operation.Id, pasted);
+            err = ResourceLinkStore.TryOpen(operation.Id);
+        }
+
+        if (err is null)
+        {
+            var url = ResourceLinkStore.GetUrl(operation.Id);
+            return OperationResult.Success($"Ouverture MediaFire / lien : {operation.Title}\n{url}");
+        }
+
+        return OperationResult.Fail(err);
     }
 
     private static bool NeedsUserInput(string operationId) =>
@@ -878,6 +1024,7 @@ public partial class MainViewModel : ObservableObject
     {
         // Bouton FASTBOOT de la barre utilitaire
         RefreshComPorts();
+        var serials = await _fastboot.GetSerialsAsync();
         var fb = await _fastboot.DevicesAsync();
         foreach (var line in fb.Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
         {
@@ -885,7 +1032,10 @@ public partial class MainViewModel : ObservableObject
         }
 
         await PollDevicesAsync();
-        _log.Success("Fastboot / refresh terminé.");
+        if (serials.Count == 0)
+            _log.Warn("Fastboot refresh — aucun appareil.");
+        else
+            _log.Success($"Fastboot OK — {serials.Count} appareil(s).");
     }
 
     [RelayCommand]
@@ -905,13 +1055,21 @@ public partial class MainViewModel : ObservableObject
         }
 
         await PollDevicesAsync();
-        if (_adb.IsAvailable)
+        if (!_adb.IsAvailable)
         {
-            _log.Success("ADB check OK.");
+            _log.Error("ADB introuvable.");
+        }
+        else if (ConnectedDevice is null)
+        {
+            _log.Warn("ADB OK — aucun appareil branché.");
+        }
+        else
+        {
+            _log.Success($"ADB OK — {ConnectedDevice.Serial} ({ConnectedDevice.State}).");
         }
     }
 
-    private const string WebsiteUrl = "https://github.com/rhos-42/RhosTool/tree/main/web";
+    private const string WebsiteUrl = "https://github.com/rhos-42/RhosTool/releases/tag/v1.0.0";
 
     [RelayCommand]
     private void OpenConfig()

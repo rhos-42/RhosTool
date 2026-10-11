@@ -406,6 +406,8 @@
                   <TextBlock TextTrimming="CharacterEllipsis">
                     <Run Text="USB  " Foreground="{StaticResource BrushAccent}" FontWeight="Bold" />
                     <Run Text="{Binding UsbStatus, Mode=OneWay}" Foreground="White" />
+                    <Run Text="  ·  " Foreground="#888" />
+                    <Run Text="{Binding ConnectionModeText, Mode=OneWay}" Foreground="{StaticResource BrushAccentText}" />
                   </TextBlock>
                 </Border>
                 <ComboBox Grid.Column="1"

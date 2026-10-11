@@ -28,8 +28,14 @@ Site statique (compte + téléchargements) dans [`web/`](web/) — même Supabas
 Voir [docs/SITE.md](docs/SITE.md) et [web/README.md](web/README.md).
 
 ```powershell
-# Build portable + copie vers web/downloads/
+# Build portable (ZIP single-file)
 .\installer\publish-portable.ps1
+
+# Build installateur (Installer.zip + Setup.exe si Inno Setup est installé)
+.\installer\publish-installer.ps1
+
+# Installer localement sur ce PC
+.\installer\install.ps1
 
 # Prévisualiser le site
 cd web; python -m http.server 8080

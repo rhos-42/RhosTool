@@ -29,58 +29,88 @@ public sealed class OperationRunner
         _fastboot = fastboot ?? new FastbootService(log);
     }
 
-    public async Task<string> RunAsync(
+    public async Task<OperationResult> RunAsync(
         DeviceOperation operation,
         DeviceInfo? device,
         string? userInput = null,
         CancellationToken ct = default)
     {
+        if (operation.RequiredMode == DeviceRequiredMode.Unavailable ||
+            operation.Kind == OperationKind.PartnerStub)
+        {
+            return OperationResult.Fail(PartnerMessage(operation.Title));
+        }
+
         if (operation.RequiresDevice && device is null)
         {
             _log.Warn("Aucun appareil connecté pour cette opération.");
-            return "Aucun appareil connecté.";
+            return OperationResult.Fail("ÉCHEC — aucun appareil connecté.");
         }
 
-        switch (operation.Kind)
+        try
         {
-            case OperationKind.ReadInfo:
-                return await ReadInfoAsync(device!, ct).ConfigureAwait(false);
+            switch (operation.Kind)
+            {
+                case OperationKind.ReadInfo:
+                    return OperationResult.Success(await ReadInfoAsync(device!, ct).ConfigureAwait(false));
 
-            case OperationKind.Reboot:
-                await _adb.RebootAsync(device!.Serial, null, ct).ConfigureAwait(false);
-                return "Redémarrage demandé.";
+                case OperationKind.Reboot:
+                    await _adb.RebootAsync(device!.Serial, null, ct).ConfigureAwait(false);
+                    return OperationResult.Success("Redémarrage demandé.");
 
-            case OperationKind.RebootRecovery:
-                await _adb.RebootAsync(device!.Serial, "recovery", ct).ConfigureAwait(false);
-                return "Redémarrage recovery demandé.";
+                case OperationKind.RebootRecovery:
+                    await _adb.RebootAsync(device!.Serial, "recovery", ct).ConfigureAwait(false);
+                    return OperationResult.Success("Redémarrage recovery demandé.");
 
-            case OperationKind.OpenDeviceManager:
-                return OpenDeviceManager();
+                case OperationKind.OpenDeviceManager:
+                    return OperationResult.Success(OpenDeviceManager());
 
-            case OperationKind.PartnerStub:
-                return PartnerMessage(operation.Title);
+                case OperationKind.AdbAppControl:
+                    return Wrap(await RunAppControlAsync(operation.Id, device!, userInput, ct).ConfigureAwait(false));
 
-            case OperationKind.AdbAppControl:
-                return await RunAppControlAsync(operation.Id, device!, userInput, ct).ConfigureAwait(false);
+                case OperationKind.FirmwarePack:
+                    return Wrap(await RunFirmwarePackAsync(operation.Id, userInput, ct).ConfigureAwait(false));
 
-            case OperationKind.FirmwarePack:
-                return await RunFirmwarePackAsync(operation.Id, userInput, ct).ConfigureAwait(false);
+                case OperationKind.DeviceAction:
+                    return await RunDeviceActionAsync(operation.Id, device, userInput, ct).ConfigureAwait(false);
 
-            case OperationKind.DeviceAction:
-                return await RunDeviceActionAsync(operation.Id, device, userInput, ct).ConfigureAwait(false);
+                case OperationKind.AdbTools:
+                    return await RunAdbToolsAsync(operation.Id, device, userInput, ct).ConfigureAwait(false);
 
-            case OperationKind.AdbTools:
-                return await RunAdbToolsAsync(operation.Id, device, userInput, ct).ConfigureAwait(false);
+                case OperationKind.MtpFiles:
+                    return OperationResult.Fail("MTP est géré par la couche Windows (MainViewModel).");
 
-            case OperationKind.MtpFiles:
-                return "MTP est géré par la couche Windows (MainViewModel).";
+                case OperationKind.OpenResourceLink:
+                    return OperationResult.Fail("Les liens ressources sont ouverts par l'interface (MainViewModel).");
 
-            default:
-                return "Opération inconnue.";
+                default:
+                    return OperationResult.Fail("Opération inconnue.");
+            }
+        }
+        catch (InvalidOperationException ex)
+        {
+            return OperationResult.Fail($"ÉCHEC — {ex.Message}");
         }
     }
 
-    private async Task<string> RunAdbToolsAsync(
+    private static OperationResult Wrap(string message)
+    {
+        if (string.IsNullOrWhiteSpace(message))
+            return OperationResult.Fail("ÉCHEC — aucune réponse.");
+
+        if (message.StartsWith("Aucun", StringComparison.OrdinalIgnoreCase) ||
+            message.StartsWith("ÉCHEC", StringComparison.OrdinalIgnoreCase) ||
+            message.Contains("introuvable", StringComparison.OrdinalIgnoreCase) ||
+            message.Contains("non exécuté", StringComparison.OrdinalIgnoreCase) ||
+            message.Contains("réservé aux", StringComparison.OrdinalIgnoreCase))
+        {
+            return OperationResult.Fail(message);
+        }
+
+        return OperationResult.Success(message);
+    }
+
+    private async Task<OperationResult> RunAdbToolsAsync(
         string operationId,
         DeviceInfo? device,
         string? userInput,
@@ -90,99 +120,121 @@ public sealed class OperationRunner
         {
             case "adb-status":
             case "adb-devices":
-                return await _adb.StatusAsync(ct).ConfigureAwait(false);
+            {
+                var status = await _adb.StatusAsync(ct).ConfigureAwait(false);
+                if (status.Contains("ADB introuvable", StringComparison.OrdinalIgnoreCase))
+                    return OperationResult.Fail(status);
+                if (status.Contains("Appareils: 0", StringComparison.Ordinal))
+                    return OperationResult.Fail(status + "\nÉCHEC — branchez un appareil (ADB).");
+                return OperationResult.Success(status);
+            }
 
             case "adb-wait":
-                return await _adb.WaitForDeviceAsync(ct).ConfigureAwait(false);
+                return Wrap(await _adb.WaitForDeviceAsync(ct).ConfigureAwait(false));
 
             case "adb-connect":
-                return await _adb.ConnectAsync(userInput ?? "", ct).ConfigureAwait(false);
+                return Wrap(await _adb.ConnectAsync(userInput ?? "", ct).ConfigureAwait(false));
 
             case "adb-disconnect":
-                return await _adb.DisconnectAsync(userInput, ct).ConfigureAwait(false);
+                return Wrap(await _adb.DisconnectAsync(userInput, ct).ConfigureAwait(false));
 
             case "adb-tcpip":
-                return await _adb.EnableTcpIpAsync(RequireAndroid(device).Serial, 5555, ct).ConfigureAwait(false);
+                return OperationResult.Success(
+                    await _adb.EnableTcpIpAsync(RequireAndroid(device).Serial, 5555, ct).ConfigureAwait(false));
 
             case "adb-state":
-                return await _adb.GetStateAsync(RequireAndroid(device).Serial, ct).ConfigureAwait(false);
+                return OperationResult.Success(
+                    await _adb.GetStateAsync(RequireAndroid(device).Serial, ct).ConfigureAwait(false));
 
             case "adb-push":
             {
                 var parts = (userInput ?? "").Split('|', 2);
-                if (parts.Length < 2) return "Usage push : local|remote";
-                return await _adb.PushAsync(RequireAndroid(device).Serial, parts[0], parts[1], ct)
-                    .ConfigureAwait(false);
+                if (parts.Length < 2) return OperationResult.Fail("Usage push : local|remote");
+                return OperationResult.Success(
+                    await _adb.PushAsync(RequireAndroid(device).Serial, parts[0], parts[1], ct)
+                        .ConfigureAwait(false));
             }
 
             case "adb-pull":
             {
                 var parts = (userInput ?? "").Split('|', 2);
-                if (parts.Length < 2) return "Usage pull : remote|local";
-                return await _adb.PullAsync(RequireAndroid(device).Serial, parts[0], parts[1], ct)
-                    .ConfigureAwait(false);
+                if (parts.Length < 2) return OperationResult.Fail("Usage pull : remote|local");
+                return OperationResult.Success(
+                    await _adb.PullAsync(RequireAndroid(device).Serial, parts[0], parts[1], ct)
+                        .ConfigureAwait(false));
             }
 
             case "adb-ls":
-                return await _adb.ListRemoteDirAsync(RequireAndroid(device).Serial, userInput ?? "/sdcard", ct)
-                    .ConfigureAwait(false);
+                return OperationResult.Success(
+                    await _adb.ListRemoteDirAsync(RequireAndroid(device).Serial, userInput ?? "/sdcard", ct)
+                        .ConfigureAwait(false));
 
             case "adb-shell":
-                return await _adb.ShellCommandAsync(RequireAndroid(device).Serial, userInput ?? "", ct)
-                    .ConfigureAwait(false);
+                return OperationResult.Success(
+                    await _adb.ShellCommandAsync(RequireAndroid(device).Serial, userInput ?? "", ct)
+                        .ConfigureAwait(false));
 
             case "adb-logcat":
-                return await _adb.LogcatDumpAsync(RequireAndroid(device).Serial, userInput, ct)
-                    .ConfigureAwait(false);
+                return OperationResult.Success(
+                    await _adb.LogcatDumpAsync(RequireAndroid(device).Serial, userInput, ct)
+                        .ConfigureAwait(false));
 
             case "adb-screencap":
                 if (string.IsNullOrWhiteSpace(userInput))
-                    return "Chemin PNG local requis.";
-                return await _adb.ScreenshotAsync(RequireAndroid(device).Serial, userInput, ct)
-                    .ConfigureAwait(false);
+                    return OperationResult.Fail("Chemin PNG local requis.");
+                return OperationResult.Success(
+                    await _adb.ScreenshotAsync(RequireAndroid(device).Serial, userInput, ct)
+                        .ConfigureAwait(false));
 
             case "adb-bugreport":
                 if (string.IsNullOrWhiteSpace(userInput))
-                    return "Chemin ZIP/local requis.";
-                return await _adb.BugreportAsync(RequireAndroid(device).Serial, userInput, ct)
-                    .ConfigureAwait(false);
+                    return OperationResult.Fail("Chemin ZIP/local requis.");
+                return OperationResult.Success(
+                    await _adb.BugreportAsync(RequireAndroid(device).Serial, userInput, ct)
+                        .ConfigureAwait(false));
 
             case "adb-root":
-                return await _adb.RootAsync(RequireAndroid(device).Serial, ct).ConfigureAwait(false);
+                return OperationResult.Success(
+                    await _adb.RootAsync(RequireAndroid(device).Serial, ct).ConfigureAwait(false));
 
             case "adb-unroot":
-                return await _adb.UnrootAsync(RequireAndroid(device).Serial, ct).ConfigureAwait(false);
+                return OperationResult.Success(
+                    await _adb.UnrootAsync(RequireAndroid(device).Serial, ct).ConfigureAwait(false));
 
             case "adb-remount":
-                return await _adb.RemountAsync(RequireAndroid(device).Serial, ct).ConfigureAwait(false);
+                return OperationResult.Success(
+                    await _adb.RemountAsync(RequireAndroid(device).Serial, ct).ConfigureAwait(false));
 
             case "adb-sideload":
-                return await _adb.RebootSideloadAsync(RequireAndroid(device).Serial, ct).ConfigureAwait(false);
+                return OperationResult.Success(
+                    await _adb.RebootSideloadAsync(RequireAndroid(device).Serial, ct).ConfigureAwait(false));
 
             case "adb-sync":
-                return await _adb.SyncAsync(RequireAndroid(device).Serial, ct).ConfigureAwait(false);
+                return OperationResult.Success(
+                    await _adb.SyncAsync(RequireAndroid(device).Serial, ct).ConfigureAwait(false));
 
             case "adb-forward-list":
-                return await _adb.ForwardListAsync(RequireAndroid(device).Serial, ct).ConfigureAwait(false);
+                return OperationResult.Success(
+                    await _adb.ForwardListAsync(RequireAndroid(device).Serial, ct).ConfigureAwait(false));
 
             case "adb-reboot":
                 await _adb.RebootAsync(RequireAndroid(device).Serial, null, ct).ConfigureAwait(false);
-                return "Redémarrage demandé.";
+                return OperationResult.Success("Redémarrage demandé.");
 
             case "adb-reboot-recovery":
                 await _adb.RebootAsync(RequireAndroid(device).Serial, "recovery", ct).ConfigureAwait(false);
-                return "Recovery demandé.";
+                return OperationResult.Success("Recovery demandé.");
 
             case "adb-reboot-bootloader":
                 await _adb.RebootAsync(RequireAndroid(device).Serial, "bootloader", ct).ConfigureAwait(false);
-                return "Bootloader demandé.";
+                return OperationResult.Success("Bootloader demandé.");
 
             default:
-                return $"Outil ADB inconnu : {operationId}";
+                return OperationResult.Fail($"Outil ADB inconnu : {operationId}");
         }
     }
 
-    private async Task<string> RunDeviceActionAsync(
+    private async Task<OperationResult> RunDeviceActionAsync(
         string operationId,
         DeviceInfo? device,
         string? userInput,
@@ -191,35 +243,44 @@ public sealed class OperationRunner
         switch (operationId)
         {
             case "enable-adb":
-                return await _adb.StatusAsync(ct).ConfigureAwait(false);
+            {
+                var status = await _adb.StatusAsync(ct).ConfigureAwait(false);
+                if (status.Contains("ADB introuvable", StringComparison.OrdinalIgnoreCase) ||
+                    status.Contains("Appareils: 0", StringComparison.Ordinal))
+                    return OperationResult.Fail(status + "\nÉCHEC — aucun appareil ADB.");
+                return OperationResult.Success(status);
+            }
 
             case "boot-device":
             case "reboot":
                 await _adb.RebootAsync(RequireAndroid(device).Serial, null, ct).ConfigureAwait(false);
-                return "Redémarrage demandé (BOOT DEVICE).";
+                return OperationResult.Success("Redémarrage demandé (BOOT DEVICE).");
 
             case "reboot-rec":
                 await _adb.RebootAsync(RequireAndroid(device).Serial, "recovery", ct).ConfigureAwait(false);
-                return "Redémarrage recovery demandé.";
+                return OperationResult.Success("Redémarrage recovery demandé.");
 
             case "reboot-fb":
                 await _adb.RebootAsync(RequireAndroid(device).Serial, "bootloader", ct).ConfigureAwait(false);
-                return "Redémarrage bootloader / fastboot demandé.\nUtilisez le bouton FASTBOOT pour lister l'appareil.";
+                return OperationResult.Success(
+                    "Redémarrage bootloader / fastboot demandé.\nUtilisez FASTBOOT pour vérifier l'appareil.");
 
             case "factory":
             case "format-data":
-                return await _adb.FactoryResetAsync(RequireAndroid(device).Serial, ct).ConfigureAwait(false);
+                return OperationResult.Success(
+                    await _adb.FactoryResetAsync(RequireAndroid(device).Serial, ct).ConfigureAwait(false));
 
             case "read-info":
             case "imei":
-                return await ReadInfoAsync(device!, ct).ConfigureAwait(false);
+                return OperationResult.Success(await ReadInfoAsync(device!, ct).ConfigureAwait(false));
 
             case "screen-lock":
-                return await _adb.OpenSecuritySettingsAsync(RequireAndroid(device).Serial, ct)
-                    .ConfigureAwait(false);
+                return OperationResult.Success(
+                    await _adb.OpenSecuritySettingsAsync(RequireAndroid(device).Serial, ct)
+                        .ConfigureAwait(false));
 
             case "drivers":
-                return OpenDeviceManager();
+                return OperationResult.Success(OpenDeviceManager());
 
             case "enter-dl":
             case "edl":
@@ -227,25 +288,36 @@ public sealed class OperationRunner
             case "force-brom":
             case "mtk-preloader":
             case "mtk-meta":
-                return DownloadModeGuide();
+                // Guide uniquement — journalisé en INFO (pas un succès matériel)
+                return OperationResult.Success("GUIDE\n" + DownloadModeGuide());
 
             case "flash":
             case "flash-back":
-                return PrepareFlash();
+                return Wrap(PrepareFlash());
 
             case "fastboot-devices":
-                return await _fastboot.DevicesAsync(ct).ConfigureAwait(false);
+            {
+                var fb = await _fastboot.DevicesAsync(ct).ConfigureAwait(false);
+                if (fb.Contains("Aucun appareil fastboot", StringComparison.OrdinalIgnoreCase) ||
+                    fb.Contains("introuvable", StringComparison.OrdinalIgnoreCase))
+                    return OperationResult.Fail(fb);
+                return OperationResult.Success(fb);
+            }
 
             case "fb-unlock-status":
             {
+                var serials = await _fastboot.GetSerialsAsync(ct).ConfigureAwait(false);
+                if (serials.Count == 0)
+                    return OperationResult.Fail("ÉCHEC — aucun appareil fastboot.");
                 var devices = await _fastboot.DevicesAsync(ct).ConfigureAwait(false);
                 var unlocked = await _fastboot.GetVarAsync("unlocked", ct).ConfigureAwait(false);
                 var ability = await _fastboot.GetVarAsync("unlock_ability", ct).ConfigureAwait(false);
-                return $"{devices}\n\nunlocked:\n{unlocked}\n\nunlock_ability:\n{ability}";
+                return OperationResult.Success(
+                    $"{devices}\n\nunlocked:\n{unlocked}\n\nunlock_ability:\n{ability}");
             }
 
             default:
-                return PartnerMessage(operationId);
+                return OperationResult.Fail(PartnerMessage(operationId));
         }
     }
 
@@ -293,11 +365,9 @@ public sealed class OperationRunner
     private string PartnerMessage(string title)
     {
         _log.Warn($"{title} : module partenaire / non disponible en local.");
-        return $"{title} : non exécuté localement.\n" +
-               "Cette fonction (FRP bypass, auth bypass, unlock forcé, NV/RPMB, réseau…) " +
-               "requiert un module partenaire licencié.\n" +
-               "Disponible ici : ADB App Control, READ INFO, REBOOT, FACTORY RESET (ADB), " +
-               "LOAD/VALIDATE PACK, USB DRIVERS, FASTBOOT devices.";
+        return $"ÉCHEC — {title} non disponible en local.\n" +
+               "Module partenaire requis (FRP / auth / NV / RPMB / réseau / flash bas niveau).\n" +
+               "Opérations locales : ADB, READ INFO, REBOOT, FACTORY RESET, packs, MTP, fastboot devices.";
     }
 
     private string OpenDeviceManager()

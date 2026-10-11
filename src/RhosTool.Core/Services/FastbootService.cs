@@ -18,6 +18,41 @@ public sealed class FastbootService
 
     public bool IsAvailable => !string.IsNullOrEmpty(FastbootPath) && File.Exists(FastbootPath);
 
+    public async Task<IReadOnlyList<string>> GetSerialsAsync(CancellationToken ct = default)
+    {
+        if (!IsAvailable)
+        {
+            return Array.Empty<string>();
+        }
+
+        var output = await RunAsync("devices", ct).ConfigureAwait(false);
+        var serials = new List<string>();
+        foreach (var line in output.Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+        {
+            if (line.StartsWith("List of devices", StringComparison.OrdinalIgnoreCase))
+                continue;
+
+            var parts = line.Split(new[] { ' ', '\t' }, StringSplitOptions.RemoveEmptyEntries);
+            if (parts.Length >= 2 &&
+                parts[1].Equals("fastboot", StringComparison.OrdinalIgnoreCase))
+            {
+                serials.Add(parts[0]);
+            }
+            else if (parts.Length >= 1 &&
+                     !line.Contains('?', StringComparison.Ordinal) &&
+                     parts[0].Length > 2 &&
+                     !parts[0].Equals("fastboot", StringComparison.OrdinalIgnoreCase))
+            {
+                // Certaines builds affichent juste "SERIAL\tfastboot" déjà couvert ;
+                // ignore les lignes vides / bannières.
+                if (parts.Length >= 2)
+                    serials.Add(parts[0]);
+            }
+        }
+
+        return serials.Distinct(StringComparer.OrdinalIgnoreCase).ToList();
+    }
+
     public async Task<string> DevicesAsync(CancellationToken ct = default)
     {
         if (!IsAvailable)
@@ -25,19 +60,14 @@ public sealed class FastbootService
             return "fastboot introuvable. Placez platform-tools (fastboot.exe) à côté d'adb.";
         }
 
-        var output = await RunAsync("devices", ct).ConfigureAwait(false);
-        var lines = output
-            .Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-            .Where(l => !l.StartsWith("List of devices", StringComparison.OrdinalIgnoreCase))
-            .ToList();
-
-        if (lines.Count == 0)
+        var serials = await GetSerialsAsync(ct).ConfigureAwait(false);
+        if (serials.Count == 0)
         {
             return "Aucun appareil fastboot détecté.\nAstuce : REBOOT BOOTLOADER puis reconnectez le câble.";
         }
 
-        _log.Success($"{lines.Count} appareil(s) fastboot.");
-        return string.Join(Environment.NewLine, lines);
+        _log.Success($"{serials.Count} appareil(s) fastboot.");
+        return string.Join(Environment.NewLine, serials.Select(s => $"{s}\tfastboot"));
     }
 
     public async Task<string> GetVarAsync(string variable, CancellationToken ct = default)

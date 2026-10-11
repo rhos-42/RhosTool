@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Téléchargements — RhosTool</title>
+  <link rel="stylesheet" href="css/site.css" />
+</head>
+<body>
+  <div class="wrap">
+    <header class="topbar">
+      <a class="brand" href="index.html">RhosTool <span>downloads</span></a>
+      <nav class="nav">
+        <a href="index.html">Accueil</a>
+        <a class="active" href="downloads.html">Téléchargements</a>
+        <a href="account.html">Compte</a>
+      </nav>
+    </header>
+
+    <section class="hero hero-compact">
+      <h1>Téléchargements</h1>
+      <p>Application officielle + catalogue ressources (drivers, ramdisk, tools).</p>
+    </section>
+
+    <section class="block" id="app">
+      <div class="block-title">
+        <h2>1 · Application</h2>
+        <span class="badge badge-ok">Prêt</span>
+      </div>
+      <ul class="dl-list">
+        <li>
+          <div>
+            <strong id="dl-setup-label">RhosTool Installateur (Windows)</strong>
+            <div class="dl-meta">Setup · Menu Démarrer · Bureau · Désinstaller · Win 10/11 x64 · <span id="dl-version">v1.0.0</span></div>
+          </div>
+          <a class="btn btn-primary" id="dl-setup" href="#">Télécharger</a>
+        </li>
+        <li>
+          <div>
+            <strong id="dl-label">RhosTool Portable (Windows)</strong>
+            <div class="dl-meta">ZIP · single-file · sans installation</div>
+          </div>
+          <a class="btn" id="dl-main" href="https://github.com/rhos-42/RhosTool/releases/download/v1.0.0/RhosTool.zip">Télécharger</a>
+        </li>
+        <li>
+          <div>
+            <strong>Notes de version</strong>
+            <div class="dl-meta">GitHub Releases</div>
+          </div>
+          <a class="btn" id="dl-releases" href="https://github.com/rhos-42/RhosTool/releases/tag/v1.0.0" target="_blank" rel="noopener">Ouvrir</a>
+        </li>
+        <li>
+          <div>
+            <strong>Code source</strong>
+            <div class="dl-meta">Dépôt public</div>
+          </div>
+          <a class="btn" id="dl-gh" href="https://github.com/rhos-42/RhosTool" target="_blank" rel="noopener">GitHub</a>
+        </li>
+      </ul>
+      <p class="note" id="dl-setup-note">
+        Installateur : lance <code>Installer.cmd</code> (ou <code>RhosTool-Setup.exe</code>) → raccourcis créés → même compte que la page Compte.
+        Portable : dézippez → <code>RhosTool.exe</code>.
+      </p>
+    </section>
+
+    <section class="block" id="resources">
+      <div class="block-title">
+        <h2>2 · Ressources MediaFire</h2>
+        <span class="badge badge-wait" id="res-stats">…</span>
+      </div>
+      <p class="note">
+        Fichiers hébergés dans ton MediaFire — un dossier par catégorie.
+        <a id="mf-hub" href="#" target="_blank" rel="noopener noreferrer" hidden>Hub RhosTool</a>
+      </p>
+      <nav class="cat-nav" id="cat-nav" aria-label="Catégories"></nav>
+      <div id="resource-sections"></div>
+    </section>
+
+    <footer class="footer">
+      <span>RhosTool · catalogue ordonné</span>
+      <a href="account.html">Compte</a>
+    </footer>
+  </div>
+  <script src="js/config.js"></script>
+  <script src="js/resources.js"></script>
+  <script src="js/downloads.js"></script>
+</body>
+</html>

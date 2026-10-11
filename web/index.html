@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>RhosTool</title>
+  <link rel="stylesheet" href="css/site.css" />
+</head>
+<body>
+  <div class="wrap">
+    <header class="topbar">
+      <a class="brand" href="index.html">RhosTool <span>atelier Android / iOS</span></a>
+      <nav class="nav">
+        <a class="active" href="index.html">Accueil</a>
+        <a href="downloads.html">Téléchargements</a>
+        <a href="account.html">Compte</a>
+      </nav>
+    </header>
+
+    <section class="hero">
+      <h1>RhosTool</h1>
+      <p>
+        Outil Windows atelier : ADB / fastboot / MTP, packs firmware, compte crédits Supabase.
+      </p>
+      <div class="actions">
+        <a class="btn btn-primary" href="downloads.html#app">Télécharger l’app</a>
+        <a class="btn" href="account.html">Compte</a>
+        <a class="btn" href="downloads.html#resources">Ressources</a>
+      </div>
+    </section>
+
+    <section class="grid">
+      <a class="panel panel-link" href="downloads.html#app">
+        <h3>Application</h3>
+        <p>ZIP portable Windows — prêt sur GitHub Releases.</p>
+      </a>
+      <a class="panel panel-link" href="downloads.html#all-driver">
+        <h3>All Driver</h3>
+        <p>Pilotes USB Qualcomm, MTK, Apple, Huawei…</p>
+      </a>
+      <a class="panel panel-link" href="downloads.html#ramdisk-a12">
+        <h3>Ramdisk A12–A13</h3>
+        <p>iPhone XR → 11 · iPad 8/9 · Air 3 · Mini 5</p>
+      </a>
+      <a class="panel panel-link" href="downloads.html#ramdisk-iphone">
+        <h3>Ramdisk iPhone</h3>
+        <p>5SE → X</p>
+      </a>
+      <a class="panel panel-link" href="downloads.html#ramdisk-ipad">
+        <h3>Ramdisk iPad</h3>
+        <p>iPad 5 → Pro 12.9</p>
+      </a>
+      <a class="panel panel-link" href="downloads.html#tools">
+        <h3>Tools PC</h3>
+        <p>Tool PC · WinRa1n</p>
+      </a>
+    </section>
+
+    <footer class="footer">
+      <span>© RhosTool</span>
+      <a id="gh" href="https://github.com/rhos-42/RhosTool" target="_blank" rel="noopener">GitHub</a>
+    </footer>
+  </div>
+  <script src="js/config.js"></script>
+  <script>
+    if (window.RHOS_CONFIG?.githubUrl) document.getElementById("gh").href = window.RHOS_CONFIG.githubUrl;
+  </script>
+</body>
+</html>

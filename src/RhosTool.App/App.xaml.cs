@@ -44,6 +44,7 @@ public partial class App : Application
         try
         {
             PlatformToolsBootstrap.EnsureAvailable();
+            ResourceLinkStore.EnsureFile();
 
             var config = LocalAuthStore.LoadOrCreateConfig();
             Auth = new AuthService(config);
@@ -51,19 +52,31 @@ public partial class App : Application
             var restored = LocalAuthStore.LoadSession();
             if (restored is not null && Auth.IsConfigured)
             {
-                var restore = await Auth.RestoreSessionAsync(restored);
-                if (restore.Success && Auth.CurrentSession is not null)
+                // Timeout court : ne pas bloquer l'UI 30s sans fenêtre
+                using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+                try
                 {
-                    LocalAuthStore.SaveSession(Auth.CurrentSession);
-                    ShowMain();
-                    return;
+                    var restore = await Auth.RestoreSessionAsync(restored, cts.Token);
+                    if (restore.Success && Auth.CurrentSession is not null)
+                    {
+                        LocalAuthStore.SaveSession(Auth.CurrentSession);
+                        ShowMain();
+                        return;
+                    }
+                }
+                catch (OperationCanceledException)
+                {
+                    // Réseau lent / offline → écran login
                 }
 
                 LocalAuthStore.ClearSession();
             }
 
             var login = new LoginWindow(Auth);
+            login.WindowStartupLocation = WindowStartupLocation.CenterScreen;
+            login.Topmost = true;
             var ok = login.ShowDialog() == true && Auth.IsAuthenticated;
+            login.Topmost = false;
             if (!ok)
             {
                 Shutdown();

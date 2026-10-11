@@ -31,6 +31,12 @@ tools/platform-tools/
 tools/platform-tools.zip
 tools/libimobiledevice/
 
+# Distribution output (installers, portable zips, built binaries, MSYS2 installer)
+dist/
+*.zip
+*.exe
+cpp/build/
+
 # Secrets / local auth (never commit)
 **/appsettings.Local.json
 **/config.local.json
