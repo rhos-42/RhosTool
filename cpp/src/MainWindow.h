@@ -16,6 +16,7 @@ class QPushButton;
 class QGridLayout;
 class QMouseEvent;
 class QComboBox;
+class QIcon;
 
 class MainWindow : public QWidget {
     Q_OBJECT
@@ -45,6 +46,7 @@ private:
     void rebuildFuncTabs();
     void rebuildModels();
     void rebuildOps();
+    QIcon opBullet(const QString& kind) const;
     void filterModels(const QString& text);
     void onModelSelected();
     const CatalogModel* currentModel() const;

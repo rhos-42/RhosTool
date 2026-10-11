@@ -11,6 +11,9 @@
 #include <QFileDialog>
 #include <QFrame>
 #include <QGridLayout>
+#include <QIcon>
+#include <QPainter>
+#include <QPixmap>
 #include <QHBoxLayout>
 #include <QInputDialog>
 #include <QLabel>
@@ -165,6 +168,18 @@ void MainWindow::applyStyle() {
         }
         QPushButton#ActionBtn:hover { border-color: #F57C00; color: #FFC66B; }
         QPushButton#ActionBtn:pressed { background: #242424; }
+
+        QScrollArea#OpsScroll, QWidget#OpsHost { background: #171717; border: none; }
+        QPushButton#OpRow {
+            background: #1C1C1C; color: #E6E6E6; border: none;
+            border-bottom: 1px solid #262626; border-left: 3px solid transparent;
+            text-align: left; padding: 10px 14px; font-size: 12px; font-weight: 600;
+        }
+        QPushButton#OpRow:hover {
+            background: qlineargradient(x1:0,y1:0,x2:1,y2:0, stop:0 #2E2411, stop:0.06 #262626, stop:1 #202020);
+            color: #FFFFFF; border-left: 3px solid #F57C00;
+        }
+        QPushButton#OpRow:pressed { background: #2E2411; }
 
         QPushButton#UtilBtn {
             background: qlineargradient(x1:0,y1:0,x2:0,y2:1, stop:0 #2B2B2B, stop:1 #202020);
@@ -347,8 +362,13 @@ QWidget* MainWindow::buildCenterPanel() {
 
     auto* scroll = new QScrollArea(panel);
     scroll->setWidgetResizable(true);
+    scroll->setObjectName(QStringLiteral("OpsScroll"));
     opsHost_ = new QWidget(scroll);
-    opsHost_->setLayout(new FlowLayout(opsHost_, 0, 8, 8));
+    opsHost_->setObjectName(QStringLiteral("OpsHost"));
+    auto* opsLay = new QVBoxLayout(opsHost_);
+    opsLay->setContentsMargins(0, 0, 0, 0);
+    opsLay->setSpacing(0);
+    opsLay->setAlignment(Qt::AlignTop);
     scroll->setWidget(opsHost_);
     lay->addWidget(scroll, 1);
     return panel;
@@ -691,25 +711,54 @@ void MainWindow::onModelSelected() {
     chipCombo_->addItem(m.chip.isEmpty() ? QStringLiteral("—") : m.chip);
 }
 
+QIcon MainWindow::opBullet(const QString& kind) const {
+    QColor c(0xF5, 0x7C, 0x00); // orange par défaut
+    if (kind == QLatin1String("ReadInfo")) c = QColor(0x42, 0xA5, 0xF5);
+    else if (kind == QLatin1String("Reboot") || kind == QLatin1String("RebootRecovery")) c = QColor(0x66, 0xBB, 0x6A);
+    else if (kind == QLatin1String("AdbTools") || kind == QLatin1String("AdbAppControl") || kind == QLatin1String("MtpFiles")) c = QColor(0x26, 0xC6, 0xDA);
+    else if (kind == QLatin1String("FirmwarePack")) c = QColor(0xFF, 0xB3, 0x00);
+    else if (kind == QLatin1String("OpenResourceLink")) c = QColor(0xAB, 0x47, 0xBC);
+    else if (kind == QLatin1String("PartnerStub")) c = QColor(0x8D, 0x8D, 0x8D);
+    else if (kind == QLatin1String("DeviceAction")) c = QColor(0xFF, 0x8A, 0x65);
+    QPixmap pm(18, 18);
+    pm.fill(Qt::transparent);
+    QPainter p(&pm);
+    p.setRenderHint(QPainter::Antialiasing);
+    p.setPen(Qt::NoPen);
+    p.setBrush(c.darker(130));
+    p.drawEllipse(1, 1, 16, 16);
+    p.setBrush(c);
+    p.drawEllipse(3, 3, 12, 12);
+    p.setBrush(QColor(255, 255, 255, 60));
+    p.drawEllipse(5, 4, 8, 5);
+    p.end();
+    return QIcon(pm);
+}
+
 void MainWindow::rebuildOps() {
-    auto* flow = static_cast<FlowLayout*>(opsHost_->layout());
-    if (!flow) return;
+    auto* lay = qobject_cast<QVBoxLayout*>(opsHost_->layout());
+    if (!lay) return;
     QLayoutItem* child;
-    while ((child = flow->takeAt(0)) != nullptr) {
-        delete child->widget();
+    while ((child = lay->takeAt(0)) != nullptr) {
+        if (child->widget()) child->widget()->deleteLater();
         delete child;
     }
     if (brands_.isEmpty()) return;
     const auto& tabs = brands_[brandIndex_].tabs;
     if (funcTabIndex_ < 0 || funcTabIndex_ >= tabs.size()) return;
     for (const auto& op : tabs[funcTabIndex_].ops) {
-        auto* b = new QPushButton(op.title, opsHost_);
-        b->setObjectName(QStringLiteral("ActionBtn"));
+        auto* b = new QPushButton(QStringLiteral("  ") + op.title, opsHost_);
+        b->setObjectName(QStringLiteral("OpRow"));
+        b->setIcon(opBullet(op.kind));
+        b->setIconSize(QSize(16, 16));
         b->setToolTip(op.description);
         b->setCursor(Qt::PointingHandCursor);
+        b->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+        b->setMinimumHeight(44);
         connect(b, &QPushButton::clicked, this, [this, op] { runCatalogOp(op); });
-        flow->addWidget(b);
+        lay->addWidget(b);
     }
+    lay->addStretch();
 }
 
 QString MainWindow::askText(const QString& title, const QString& label, const QString& def) {
